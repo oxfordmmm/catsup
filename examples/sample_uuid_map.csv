@@ -1,0 +1,7 @@
+sample_name,sample_uuid4,original_file,renamed_file
+P0001,c6f24a54-3a6d-4676-9024-2dec6a51830b,in/P0001_1.fastq.gz,c6f24a54-3a6d-4676-9024-2dec6a51830b_1.fastq.gz
+P0001,c6f24a54-3a6d-4676-9024-2dec6a51830b,in/P0001_2.fastq.gz,c6f24a54-3a6d-4676-9024-2dec6a51830b_2.fastq.gz
+P0002,b1acabd2-6476-429b-b230-a27295399cd6,in/P0002_1.fastq.gz,b1acabd2-6476-429b-b230-a27295399cd6_1.fastq.gz
+P0002,b1acabd2-6476-429b-b230-a27295399cd6,in/P0002_2.fastq.gz,b1acabd2-6476-429b-b230-a27295399cd6_2.fastq.gz
+P0003,e6d24ef0-347d-4f6d-8de1-6af0268ceaf7,in/P0003_1.fastq.gz,e6d24ef0-347d-4f6d-8de1-6af0268ceaf7_1.fastq.gz
+P0003,e6d24ef0-347d-4f6d-8de1-6af0268ceaf7,in/P0003_2.fastq.gz,e6d24ef0-347d-4f6d-8de1-6af0268ceaf7_2.fastq.gz
