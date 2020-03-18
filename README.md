@@ -1,5 +1,5 @@
 # Catsup
-Catsup is a python script that helps users to pre-process pathogen sequencing data to use [SP3](https://catdocs.readthedocs.io/en/latest/index.html), Scalable Pathogen Pipeline Platform. It prepares meta-data, removes human reads and uploads sequencing fastq files to a a S3 bucket.
+Catsup is a python application that helps users to pre-process pathogen sequencing data to use [SP3](https://catdocs.readthedocs.io/en/latest/index.html), Scalable Pathogen Pipeline Platform. It prepares meta-data, removes human reads and uploads sequencing fastq files to a a S3 bucket.
 
 ## Catsup functions
 
