@@ -1,0 +1,11 @@
+pipelines/catsup-kraken2/work
+pipelines/catsup-kraken2/out
+pipelines/catsup-kraken2/.nextflow/*
+pipelines/catsup-kraken2/.nextflow.log*
+pipelines/catsup-kraken2/report.*
+
+pipelines/catsup-minimap2/work
+pipelines/catsup-minimap2/out
+pipelines/catsup-minimap2/.nextflow/*
+pipelines/catsup-minimap2/.nextflow.log*
+pipelines/catsup-minimap2/report.*
