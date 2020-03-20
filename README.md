@@ -1,19 +1,19 @@
 # Catsup
-Catsup is a python script that helps users to pre-process pathogen sequencing data to use [SP3](https://catdocs.readthedocs.io/en/latest/index.html), Scalable Pathogen Pipeline Platform. It prepares meta-data, removes human reads and uploads sequencing fastq files to a a S3 bucket.
+Catsup is a python application that helps users to pre-process pathogen sequencing data to use [SP3](https://catdocs.readthedocs.io/en/latest/index.html), Scalable Pathogen Pipeline Platform. It prepares meta-data, removes human reads and uploads sequencing fastq files to a dedicated storage, for example, a S3 bucket.
 
 ## Catsup functions
 
 ### Prepare the template
-1. Generates a template for data submission
+1. Generates a template for data submission (input.csv)
 2. Validates the template after user input
 
 ### Anonymizing sample identifier
 3. Creates unique identifier (UUID) for submission
 4. Creates unique identifier (UUID) for every sample
 5. Generate md5sum for each sample file
-6. Update the template with submission UUID, sample guid and md5sum
+6. Update the template with submission UUID, sample guid and md5sum (sp3data.csv)
 7. Rename/symlink sample files with sample UUID
-8. Generates a lookup table of sample name and sample guid
+8. Generates a lookup table of sample name and sample guid (sample_uuid_map.csv)
 
 ### Removing human reads
 9. Run quality control pipeline (trimming and remove human reads)
@@ -21,7 +21,10 @@ Catsup is a python script that helps users to pre-process pathogen sequencing da
 ### Upload to a S3 bucket
 10. Upload cleaned (no human reads) sample files to S3 buckets
 
-## User template example
+## Example files
+Example files are in folder examples.
+
+### User template example (input.csv)
 
 | index | subindex | sample_name | sample_filename | sample_file_extension | sample_host | sample_collection_date | sample_country | submission_title | submission_description | submitter_organisation | submitter_email | instrument_platform | instrument_model | instrument_flowcell |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | 
@@ -32,7 +35,7 @@ Catsup is a python script that helps users to pre-process pathogen sequencing da
 3 | 1 | P0003 | in/P0003_1.fastq.gz | fastq.gz | Homo sapiens | 2020-01-30 | United Kingdom | Bacteria infection study | Bacteria infection study for drug resistance | University of Oxford | crookit@ndm.ox.ac.uk | Illumina pair-ended sequencing | Illumina HiSeq 4000 | 96
 3 | 2 | P0003 | in/P0003_2.fastq.gz | fastq.gz | Homo sapiens | 2020-01-30 | United Kingdom | Bacteria infection study | Bacteria infection study for drug resistance | University of Oxford | crookit@ndm.ox.ac.uk | Illumina pair-ended sequencing | Illumina HiSeq 4000 | 96
 
-## UUID and sample lookup table example
+### UUID and sample lookup table example
 
 Sample names and sample file names are renamed to UUIDs.
 
@@ -47,7 +50,7 @@ The map between sample names and UUIDs are written to a file named sample_uuid_m
 |P0003 | fff6ead2-d1ec-470b-b0a1-8935dbbe3212 | in/P0003_1.fastq.gz | fff6ead2-d1ec-470b-b0a1-8935dbbe3212_1.fastq.gz|
 |P0003 | fff6ead2-d1ec-470b-b0a1-8935dbbe3212 | in/P0003_2.fastq.gz | fff6ead2-d1ec-470b-b0a1-8935dbbe3212_2.fastq.gz|
 
-## Anonymized meta-data file example
+### Anonymized meta-data file example (sp3data.csv)
 
 |submission_uuid4|sample_uuid4|index|subindex|sample_filename|sample_file_extension|sample_host|sample_collection_date|sample_country|submission_title|submission_description|submitter_organisation|submitter_email|instrument_platform|instrument_model|instrument_flowcell|original_file_md5|original_file_sha1|original_file_sha512|clean_file_md5|clean_file_sha1|clean_file_sha512|
 |--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|
