@@ -21,6 +21,100 @@ Catsup is a python application that helps users to pre-process pathogen sequenci
 ### Upload to a S3 bucket
 10. Upload cleaned (no human reads) sample files to S3 buckets
 
+## Preerquisites
+
+- Python 3.6+
+- nextflow
+- s3cmd, with a valid configuration
+- kraken2 database (e.g. https://ccb.jhu.edu/software/kraken2/downloads.shtml)
+- nextflow pipeline container image: https://files.mmmoxford.uk/f/0c8eb9f9cfd24af8807c/
+
+## Configuration
+
+run catsup.py once. This will copy config.json-example to config.json.
+
+Edit config.json to suit your environment
+
+## Running
+
+Catsup is run by giving a submission name as a command-line argument.
+
+There are 4 steps:
+
+e.g.:
+
+step 1:
+
+```
+$ python3 catsup.py testsubmission
+
+*** Preprocessing step: user template
+
+Created testsubmission/inputs.csv
+Edit the file to add your samples.
+
+*** Finished preprocessing step: user template
+
+*** Next step: prepare data
+```
+
+Following instructions, please fill in the inputs.csv spreadsheet and run catsup again.
+
+step 2:
+
+```
+$ python3 catsup.py testsubmission
+
+*** Preprocessing step: prepare data
+
+Preparing data for pipeline
+testsubmission/inputs.csv validated
+testsubmission/pipeline_in/2149752c-375f-4f47-9884-771d6a95c06d_1.fastq.gz -> /home/ubuntu/catsup-oxfordmmm/in/P0001_1.fastq.gz
+testsubmission/pipeline_in/2149752c-375f-4f47-9884-771d6a95c06d_2.fastq.gz -> /home/ubuntu/catsup-oxfordmmm/in/P0001_2.fastq.gz
+testsubmission/pipeline_in/46a76f9e-07a4-4646-a686-39351cf8c8d0_1.fastq.gz -> /home/ubuntu/catsup-oxfordmmm/in/P0002_1.fastq.gz
+testsubmission/pipeline_in/46a76f9e-07a4-4646-a686-39351cf8c8d0_2.fastq.gz -> /home/ubuntu/catsup-oxfordmmm/in/P0002_2.fastq.gz
+testsubmission/pipeline_in/4074a583-d5be-4c8c-b578-93623b110e94_1.fastq.gz -> /home/ubuntu/catsup-oxfordmmm/in/P0003_1.fastq.gz
+testsubmission/pipeline_in/4074a583-d5be-4c8c-b578-93623b110e94_2.fastq.gz -> /home/ubuntu/catsup-oxfordmmm/in/P0003_2.fastq.gz
+Wrote sp3 submission data to: testsubmission/sp3data.csv
+Wrote sample file <-> uuid map to: testsubmission/sample_uuid_map.csv
+
+*** Finished preprocessing step: prepare data
+
+*** Next step: nextflow pipeline
+```
+
+step 3:
+
+```
+$ python3 catsup.py testsubmission
+
+*** Preprocessing step: nextflow pipeline
+
+Running pipeline: catsup-kraken2
+Changing directory to: testsubmission/pipeline_run
+Nextflow invocation: nextflow /home/ubuntu/catsup-oxfordmmm/pipelines/catsup-kraken2/catsup-kraken2.nf --input_dir ../pipeline_in/ --read_pattern '*_{1,2}.fastq.gz' --output_dir ../upload -with-singularity /data/images/fatos-20200320T140813_2.2.img --db /data/databases/clockworkcloud/kraken2/minikraken2_v2_8GB_201904_UPDATE
+
+*** Finished preprocessing step: nextflow pipeline
+
+*** Next step: s3 upload
+```
+
+step 4:
+
+```
+$ python3 catsup.py testsubmission
+
+*** Preprocessing step: s3 upload
+
+Uploading to S3
+s3cmd invocation: s3cmd -c /home/ubuntu/.s3cfg-catsup put testsubmission/upload/46a76f9e-07a4-4646-a686-39351cf8c8d0_C1.fastq.gz testsubmission/upload/4074a583-d5be-4c8c-b578-93623b110e94_C2.fastq.gz testsubmission/upload/2149752c-375f-4f47-9884-771d6a95c06d_C2.fastq.gz testsubmission/upload/2149752c-375f-4f47-9884-771d6a95c06d_C1.fastq.gz testsubmission/upload/46a76f9e-07a4-4646-a686-39351cf8c8d0_C2.fastq.gz testsubmission/upload/4074a583-d5be-4c8c-b578-93623b110e94_C1.fastq.gz s3://mmm-sp3-alpha/34113c20-db51-400f-8952-9c5868c5fcee/
+Uploaded files to: s3://mmm-sp3-alpha/34113c20-db51-400f-8952-9c5868c5fcee
+
+*** Finished preprocessing step: s3 upload
+```
+
+
+
 ## Example files
 Example files are in folder examples.
 
