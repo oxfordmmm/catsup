@@ -21,7 +21,7 @@ Catsup is a python application that helps users to pre-process pathogen sequenci
 ### Upload to a S3 bucket
 10. Upload cleaned (no human reads) sample files to S3 buckets
 
-## Preerquisites
+## Prerequisites
 
 - Python 3.6+
 - nextflow
