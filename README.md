@@ -33,7 +33,9 @@ Catsup is a python application that helps users to pre-process pathogen sequenci
 
 run catsup.py once. This will copy config.json-example to config.json.
 
-Edit config.json to suit your environment
+Edit config.json to suit your environment.
+
+Please note that the paths in the config must be absolute
 
 ## Running
 
