@@ -1,0 +1,22 @@
+{
+    "number_of_example_samples": 3,
+    "pipeline": "catsup-kraken2",
+    "pipelines":
+    {
+	"catsup-kraken2":
+	{
+	    "script": "/home/ubuntu/catsup-oxfordmmm/pipelines/catsup-kraken2/catsup-kraken2.nf",
+	    "image": "/data/images/fatos-20200320T140813_2.2.img",
+	    "human_ref": "/data/databases/clockworkcloud/kraken2/minikraken2_v2_8GB_201904_UPDATE"
+	}
+
+    },
+    "upload":
+    {
+	"s3":
+	{
+	    "bucket": "s3://mmm-sp3-alpha",
+	    "s3cmd-config": "/home/ubuntu/.s3cfg-catsup"
+	}
+    }
+}
