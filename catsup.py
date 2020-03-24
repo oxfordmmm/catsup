@@ -267,6 +267,10 @@ def run_pipeline():
     print(f"Nextflow invocation: {nf_cmd}")
     p = subprocess.check_output(shlex.split(nf_cmd), cwd=str(new_dir))
 
+    s = pathlib.Path(f"{submission_name}/sp3data.csv")
+    d = pathlib.Path(f"{submission_name}/upload/sp3data.csv")
+    shutil.copy(s,d)
+    
     step_msg(3, "end")
 
 def upload_to_sp3():
