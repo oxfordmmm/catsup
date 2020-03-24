@@ -45,7 +45,7 @@ There are 4 steps:
 
 e.g.:
 
-step 1:
+### step 1:
 
 ```
 $ python3 catsup.py testsubmission
@@ -62,7 +62,7 @@ Edit the file to add your samples.
 
 Following instructions, please fill in the inputs.csv spreadsheet and run catsup again.
 
-step 2:
+### step 2:
 
 ```
 $ python3 catsup.py testsubmission
@@ -85,7 +85,7 @@ Wrote sample file <-> uuid map to: testsubmission/sample_uuid_map.csv
 *** Next step: nextflow pipeline
 ```
 
-step 3:
+### step 3:
 
 ```
 $ python3 catsup.py testsubmission
@@ -101,7 +101,7 @@ Nextflow invocation: nextflow /home/ubuntu/catsup-oxfordmmm/pipelines/catsup-kra
 *** Next step: s3 upload
 ```
 
-step 4:
+### step 4:
 
 ```
 $ python3 catsup.py testsubmission

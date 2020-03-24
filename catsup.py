@@ -154,9 +154,24 @@ def rename_sample(sample_filename, renamed_filename):
 def prepare_data():
     step_msg(2, "begin")
     print("Preparing data for pipeline")
-    if not validate.validate_template(submission_name, in_csv_name, in_fieldnames):
-        logging.error("Couldn't validate template")
-        sys.exit(-1)
+
+    input_csv = pathlib.Path(submission_name) / in_csv_name
+
+    if not pathlib.Path(input_csv).exists():
+        logging.error(f'File {input_csv} doesn\'t exists. Can\'t validate.')
+        sys.exit(1)
+
+    with open(input_csv, 'r', newline='') as csvfile:
+        reader = csv.DictReader(csvfile)
+        if reader.fieldnames != in_fieldnames:
+            logging.error(f"File {input_csv} has wrong header:")
+            logging.error(f"Expected: {in_fieldnames}")
+            logging.error(f"Received: {reader.fieldnames}")
+            sys.exit(1)
+
+        if not validate.validate_template(reader):
+            logging.error("Couldn't validate template")
+            sys.exit(-1)
 
     input_csv = pathlib.Path(submission_name) / in_csv_name
     sp3data_csv = pathlib.Path(submission_name) / 'sp3data.csv'

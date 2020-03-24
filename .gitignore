@@ -9,3 +9,5 @@ pipelines/catsup-minimap2/out
 pipelines/catsup-minimap2/.nextflow/*
 pipelines/catsup-minimap2/.nextflow.log*
 pipelines/catsup-minimap2/report.*
+
+config.json
