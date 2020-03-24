@@ -11,3 +11,4 @@ pipelines/catsup-minimap2/.nextflow.log*
 pipelines/catsup-minimap2/report.*
 
 config.json
+tests/

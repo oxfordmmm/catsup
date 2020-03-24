@@ -18,7 +18,10 @@ def read_cfg(cfg_file, cfg_file_example):
     global cfg
     with open(cfg_file) as f:
         cfg = json.loads(f.read())
-
+        if not validate.validate_config(cfg):
+            logging.error(f"Config file ({cfg_file}) is not valid.")
+            sys.exit(1)
+            
 read_cfg('config.json', 'config.json-example')
 
 in_csv_name = 'inputs.csv'

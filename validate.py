@@ -1,4 +1,6 @@
-import csv, logging, pathlib
+#! /usr/bin/env python3
+
+import csv, logging, pathlib, json
 import re
 
 in_fieldnames_date_fields = ['sample_collection_date']
@@ -52,3 +54,66 @@ def validate_template(reader):
                 logging.error(f"Column {k} file path is {v}")
                 failed = True
     return not failed
+
+def validate_config(config):
+    if type(config) != dict:
+        logging.error("Failed to validate config:")
+        logging.error("Config is not a dictionary")
+        return False
+
+    must_have_keys = ['number_of_example_samples', 'pipeline', 'pipelines']
+
+    for must_have_key in must_have_keys:
+        if must_have_key not in config:
+            logging.error("Failed to validate config:")
+            logging.error(f"Key '{must_have_key}' missing from config")
+            return False
+
+    pipeline = config['pipeline']
+    pipelines = config["pipelines"]
+
+    if type(pipeline) != str:
+        logging.error("Failed to validate config:")
+        logging.error("Key pipeline is not a string")
+        return False
+    
+    if type(pipelines) != dict:
+        logging.error("Failed to validate config:")
+        logging.error("Key pipelines is not a dict")
+        return False
+
+    if pipeline not in pipelines:
+        logging.error("Failed to validate config:")
+        logging.error(f"Pipeline {pipeline} has no configuration")
+        return False
+
+    pipeline_must_have_keys = ['script', 'image', 'human_ref']
+    
+    for pipeline_name, pipeline_conf in pipelines.items():
+        if type(pipeline_conf) != dict:
+            logging.error("Failed to validate config:")
+            logging.error(f"{pipeline_name} value is not a dict")
+            return False
+
+        for pipeline_must_have_key in pipeline_must_have_keys:
+            if pipeline_must_have_key not in pipeline_conf:
+                logging.error("Failed to validate config:")
+                logging.error(f"{pipeline_name} config is missing key {pipeline_must_have_key}")
+                return False
+
+        for k, v in pipeline_conf.items():
+            if not pathlib.Path(v).exists():
+                logging.error("Failed to validate config:")
+                logging.error(f"Pipeline config {pipeline_name}: file {v} does not exist")
+                return False
+
+    if 'upload' in config:
+        if 's3' in config['upload']:
+            s3_must_have_keys = ['bucket', 's3cmd-config']
+            for upload_must_have_key in s3_must_have_keys:
+                if upload_must_have_key not in config['upload']['s3']:
+                    logging.error("Failed to validate config:")
+                    logging.error(f"S3 config s3: key {upload_must_have_key} does not exist")
+                    return False
+    
+    return True
