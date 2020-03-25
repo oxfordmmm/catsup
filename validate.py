@@ -115,5 +115,10 @@ def validate_config(config):
                     logging.error("Failed to validate config:")
                     logging.error(f"S3 config s3: key {upload_must_have_key} does not exist")
                     return False
+            cfg_file = config['upload']['s3']['s3cmd-config']
+            if not validate_filepath(cfg_file):
+                logging.error("Failed to validate config:")
+                logging.error(f"S3 config file: file {cfg_file} does not exist")
+                return False   
     
     return True
