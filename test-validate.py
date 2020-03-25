@@ -8,8 +8,21 @@
 import unittest
 import validate
 import json
+import os
 
 class TestValidate(unittest.TestCase):
+    def setUp(self):
+        os.system("mkdir /tmp/catsup")
+        os.system("touch /tmp/catsup/test1.fastq.gz")
+        os.system("touch /tmp/catsup/catsup-kraken2.nf")
+        os.system("touch /tmp/catsup/fatos.img")
+        os.system("touch /tmp/catsup/human_ref")
+        os.system("touch /tmp/catsup/.s3cfg-catsup")
+
+    @classmethod
+    def tearDownClass(cls):
+        os.system("rm -rf /tmp/catsup")
+        
     def test_validate_date_correctformat(self):
         input_data = ['2020-01-01',
                  '',
