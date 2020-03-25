@@ -1,5 +1,13 @@
+# Test test-validate.py
+# Run all tests: python3 test-validate.py
+# Run one test:  python3 test-validate.py TestValidate.test_validate_date_correctformat
+# Run code coverage: coverge run test-validate.py 
+# View code coverage report: coverage report -m
+# Generate code coverage html report: coverage html
+
 import unittest
 import validate
+import json
 
 class TestValidate(unittest.TestCase):
     def test_validate_date_correctformat(self):
@@ -44,7 +52,7 @@ class TestValidate(unittest.TestCase):
         input_data = [{'index':1,
                       'subindex': 1,
                       'sample_name': 'P0001',
-                      'sample_filename':'/data/qc_test/HG00114.downsampled.1.fastq.gz',
+                      'sample_filename':'/tmp/catsup/test1.fastq.gz',
                       'sample_file_extension':'fastq.gz',
                       'sample_host':'human',
                       'sample_collection_date':'2020-01-01',
@@ -65,7 +73,7 @@ class TestValidate(unittest.TestCase):
         input_data = [{'index':1,
                       'subindex': 1,
                       'sample_name': 'P0001',
-                      'sample_filename':'/data/qc_test/HG00114.downsampled.1.fastq.gz',
+                      'sample_filename':'/tmp/catsup/test1.fastq.gz',
                       'sample_file_extension':'fastq.gz',
                       'sample_host':'human',
                       'sample_collection_date':'20200101',
@@ -82,11 +90,11 @@ class TestValidate(unittest.TestCase):
         result = validate.validate_template(input_data)
         self.assertEqual(expected_results, result)
 
-    def test_validate_template_filepathnotexist(self):
+    def test_validate_template_filepath_notexist(self):
         input_data = [{'index':1,
                       'subindex': 1,
                       'sample_name': 'P0001',
-                      'sample_filename':'/qc_test/HG00114.downsampled.1.fastq.gz',
+                      'sample_filename':'/tmp/catsup/nofile.fastq.gz',
                       'sample_file_extension':'fastq.gz',
                       'sample_host':'human',
                       'sample_collection_date':'2020-01-01',
@@ -107,7 +115,7 @@ class TestValidate(unittest.TestCase):
         input_data = [{'index':'',
                       'subindex': '',
                       'sample_name': '',
-                      'sample_filename':'/qc_test/HG00114.downsampled.1.fastq.gz',
+                      'sample_filename':'/tmp/catsup/test1.fastq.gz',
                       'sample_file_extension':'fastq.gz',
                       'sample_host':'human',
                       'sample_collection_date':'2020-01-01',
@@ -128,7 +136,7 @@ class TestValidate(unittest.TestCase):
         input_data = [{'index':1,
                       'subindex': 1,
                       'sample_name': 'P0001',
-                      'sample_filename':'/data/qc_test/HG00114.downsampled.1.fastq.gz',
+                      'sample_filename':'/tmp/catsup/test1.fastq.gz',
                       'sample_file_extension':'fastq.gz',
                       'sample_host':'human',
                       'sample_collection_date':'2020-01-01',
@@ -145,6 +153,105 @@ class TestValidate(unittest.TestCase):
         result = validate.validate_template(input_data)
         self.assertEqual(expected_results, result)
 
+    def test_validate_config_noconfig(self):
+        input_data = '{}'
+        expected_results = False
+        
+        result = validate.validate_config(input_data)
+        self.assertEqual(expected_results, result)
 
+    def test_validate_config_nopipelineimage(self):
+        input_data = """
+             {"number_of_example_samples": 1,
+                "pipeline": "catsup-kraken2",
+                "pipelines": {
+                "catsup-kraken2":
+                {
+                    "script": "/tmp/catsup/catsup-kraken2.nf",
+                    "image": "/tmp/catsup/nofatos.img",
+                    "human_ref": "/tmp/catsup/human_ref"
+                }},
+                "upload":
+                {
+                "s3":
+                {
+                    "bucket": "s3://mmm-sp3-alpha",
+                    "s3cmd-config": "/tmp/catsup/.s3cfg-catsup"
+                }}}
+            """
+
+        input_dict = json.loads(input_data)
+        expected_results = False
+        result = validate.validate_config(input_dict)
+        self.assertEqual(expected_results, result)
+
+    def test_validate_config_nopipelinescript(self):
+        input_data = """
+             {"number_of_example_samples": 1,
+                "pipeline": "catsup-kraken2",
+                "pipelines": {
+                "catsup-kraken2":
+                {
+                     "script": "/tmp/nocatsup.nf",
+                    "image": "/tmp/catsup/fatos.img",
+                    "human_ref": "/tmp/catsup/human_ref"
+                }},
+                "upload":
+                {
+                "s3":
+                {
+                    "bucket": "s3://mmm-sp3-alpha",
+                    "s3cmd-config": "/tmp/catsup/.s3cfg-catsup"
+                }}}
+            """
+
+        input_dict = json.loads(input_data)
+        expected_results = False
+        result = validate.validate_config(input_dict)
+        self.assertEqual(expected_results, result)
+
+    def test_validate_config_nopipelines(self):
+        input_data = """
+            {"number_of_example_samples": 1,
+            "pipeline": "catsup-kraken2",
+            "upload":
+            {
+            "s3":
+            {
+                "bucket": "s3://mmm-sp3-alpha",
+                "s3cmd-config": "/tmp/catsup/.s3cfg-catsup"
+            }}}
+            """
+
+        input_dict = json.loads(input_data)
+        expected_results = False
+        result = validate.validate_config(input_dict)
+        self.assertEqual(expected_results, result)
+
+
+    def test_validate_config_fullconfig(self):
+        input_data = """
+                {"number_of_example_samples": 1,
+                "pipeline": "catsup-kraken2",
+                "pipelines": {
+                "catsup-kraken2":
+                {
+                    "script": "/tmp/catsup/catsup-kraken2.nf",
+                    "image": "/tmp/catsup/fatos.img",
+                    "human_ref": "/tmp/catsup/human_ref"
+                }},
+                "upload":
+                {
+                "s3":
+                {
+                    "bucket": "s3://mmm-sp3-alpha",
+                    "s3cmd-config": "/tmp/catsup/.s3cfg-catsup"
+                }}}
+                """
+
+        input_dict = json.loads(input_data)
+        expected_results = True
+        result = validate.validate_config(input_dict)
+        self.assertEqual(expected_results, result)
 if __name__ == "__main__":
     unittest.main()

@@ -12,3 +12,6 @@ pipelines/catsup-minimap2/report.*
 
 config.json
 tests/
+
+*.pyc
+.coverage
