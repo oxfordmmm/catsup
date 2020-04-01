@@ -46,14 +46,24 @@ in_fieldnames = ['index',
                  'instrument_flowcell',
                  ]
 
-def make_example_entries(n):
+def make_example_entries(n, files):
     ret = list()
+    k = 0
     for i in range(1, n + 1):
         for j in range(1, 3):
+            if files:
+                print(i, j, k)
+                filename = files[k]
+                k = k + 1
+                sample_name = str(filename.name).split(".")[0]
+            else:
+                filename = f'in/P000{i}_{j}.fastq.gz'
+                sample_name = f'P000{i}'
+
             tmp = [i,
                    j,
-                   f'P000{i}',
-                   f'in/P000{i}_{j}.fastq.gz',
+                   sample_name,
+                   filename,
                    'fastq.gz',
                    'Homo sapiens',
                    '2020-01-30',
@@ -104,19 +114,29 @@ def step_msg(step, state, **kwargs):
         if step+1 in steps:
             print(f"\n*** Next step: {steps[step+1]}\n")
 
-def create_template():
+def create_template(args):
     step_msg(1, "begin")
     input_csv = pathlib.Path(submission_name) / in_csv_name
     if input_csv.exists():
         logging.error(f'File {input_csv} exists. Won\'t overwrite.')
         sys.exit(1)
 
-    with open(input_csv, 'w', newline='') as csvfile:
-        writer = csv.DictWriter(csvfile, fieldnames=in_fieldnames)
-        writer.writeheader()
-        number_of_example_samples = cfg.get('number_of_example_samples', 4)
-        for row in make_example_entries(number_of_example_samples):
-            writer.writerow(row)
+    if args:
+        directory = pathlib.Path(args[0])
+        if directory.exists():
+            files = sorted(list(directory.glob("*")), key=lambda x: x.name)
+            with open(input_csv, 'w', newline='') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=in_fieldnames)
+                writer.writeheader()
+                for row in make_example_entries(len(files) // 2, files):
+                    writer.writerow(row)
+    else:
+        with open(input_csv, 'w', newline='') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=in_fieldnames)
+            writer.writeheader()
+            number_of_example_samples = cfg.get('number_of_example_samples', 4)
+            for row in make_example_entries(number_of_example_samples, None):
+                writer.writerow(row)
 
     print(f"Created {input_csv}")
     print("Edit the file to add your samples.")
@@ -310,7 +330,7 @@ def main():
     elif input_csv.exists():
         prepare_data()
     else:
-        create_template()
+        create_template(sys.argv[2:])
 
 if __name__ == '__main__':
     main()
