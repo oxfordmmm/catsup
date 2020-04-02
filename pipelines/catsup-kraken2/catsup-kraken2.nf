@@ -43,6 +43,8 @@ Channel.fromFilePairs(input_dir + read_pattern, flat:true).set { fqs }
 
 process process_trim {
 
+    tag { dataset_id }
+
     memory '1 GB'
 
     // publishDir "${output_dir}/trimmed_reads", pattern: '*_val_{1,2}.fq.gz', mode: 'copy'

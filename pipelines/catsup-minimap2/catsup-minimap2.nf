@@ -43,6 +43,9 @@ Channel.fromFilePairs(input_dir + read_pattern, flat:true).set { fqs }
 ************/
 
 process process_trim {
+
+    tag { dataset_id }
+    
     memory '1 GB'
 
     echo true
@@ -80,6 +83,9 @@ process process_trim {
 
 
 process process_deplete {
+
+    tag { dataset_id }
+   
     memory '10 GB'
 
     echo true
