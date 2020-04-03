@@ -287,10 +287,6 @@ def run_pipeline():
     print(f"Nextflow invocation: {nf_cmd}")
     p = subprocess.check_output(shlex.split(nf_cmd), cwd=str(new_dir))
 
-    s = pathlib.Path(f"{submission_name}/sp3data.csv")
-    d = pathlib.Path(f"{submission_name}/upload/sp3data.csv")
-    shutil.copy(s,d)
-    
     step_msg(3, "end")
 
 def upload_to_sp3():
@@ -298,6 +294,11 @@ def upload_to_sp3():
     print("Uploading to S3")
 
     submission_uuid4 = hash_clean_files()
+
+    s = pathlib.Path(f"{submission_name}/sp3data.csv")
+    d = pathlib.Path(f"{submission_name}/upload/sp3data.csv")
+    shutil.copy(s,d)
+
     bucket = cfg.get("upload").get("s3").get("bucket")
     s3cmd_config = cfg.get("upload").get("s3").get("s3cmd-config")
     files = ' '.join([str(x) for x in pathlib.Path(f'{submission_name}/upload/').glob('*')])
