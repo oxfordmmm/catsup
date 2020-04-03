@@ -28,7 +28,7 @@ in_csv_name = 'inputs.csv'
 out_csv_name = 'sp3data.csv'
 sample_guid_map_name = 'sample_guid_map.csv'
 submission_name = None
-
+number_of_files_per_sample = int(cfg.get('number_of_files_per_sample'))
 in_fieldnames = ['index',
                  'subindex',
                  'sample_name',
@@ -50,7 +50,7 @@ def make_example_entries(n, files):
     ret = list()
     k = 0
     for i in range(1, n + 1):
-        for j in range(1, 3):
+        for j in range(1, number_of_files_per_sample + 1):
             if files:
                 print(i, j, k)
                 filename = files[k]
@@ -128,7 +128,7 @@ def create_template(args):
             with open(input_csv, 'w', newline='') as csvfile:
                 writer = csv.DictWriter(csvfile, fieldnames=in_fieldnames)
                 writer.writeheader()
-                for row in make_example_entries(len(files) // 2, files):
+                for row in make_example_entries(len(files) // number_of_files_per_sample, files):
                     writer.writerow(row)
     else:
         with open(input_csv, 'w', newline='') as csvfile:
@@ -279,8 +279,10 @@ def run_pipeline():
     step_msg(3, "begin")
     print(f"Running pipeline: {pipeline}")
 
-    nf_cmd = f"nextflow {pipeline_script} {nextflow_additional_params} --input_dir ../pipeline_in/ --read_pattern '*_{{1,2}}.fastq.gz' --output_dir ../upload -with-singularity {pipeline_image} --db {pipeline_human_ref}"
-
+    if number_of_files_per_sample == 2:
+        nf_cmd = f"nextflow {pipeline_script} {nextflow_additional_params} --input_dir ../pipeline_in/ --read_pattern '*_{{1,2}}.fastq.gz' --paired true --output_dir ../upload -with-singularity {pipeline_image} --db {pipeline_human_ref}"
+    if number_of_files_per_sample == 1:
+        nf_cmd = f"nextflow {pipeline_script} {nextflow_additional_params} --input_dir ../pipeline_in/ --read_pattern '*_1.fastq.gz' --paired false --output_dir ../upload -with-singularity {pipeline_image} --db {pipeline_human_ref}"
 
     new_dir = f"{submission_name}/pipeline_run"
     pathlib.Path(new_dir).mkdir(exist_ok=True)
