@@ -61,7 +61,7 @@ def validate_config(config):
         logging.error("Config is not a dictionary")
         return False
 
-    must_have_keys = ['number_of_example_samples', 'pipeline', 'pipelines']
+    must_have_keys = ['number_of_example_samples', 'pipeline', 'pipelines', 'nextflow_additional_params']
 
     for must_have_key in must_have_keys:
         if must_have_key not in config:

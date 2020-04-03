@@ -21,7 +21,7 @@ def read_cfg(cfg_file, cfg_file_example):
         if not validate.validate_config(cfg):
             logging.error(f"Config file ({cfg_file}) is not valid.")
             sys.exit(1)
-            
+
 read_cfg('config.json', 'config.json-example')
 
 in_csv_name = 'inputs.csv'
@@ -274,11 +274,12 @@ def run_pipeline():
     pipeline_script = cfg.get("pipelines").get(pipeline).get("script")
     pipeline_image = cfg.get("pipelines").get(pipeline).get("image")
     pipeline_human_ref = cfg.get("pipelines").get(pipeline).get("human_ref")
+    nextflow_additional_params = cfg.get("nextflow_additional_params")
 
     step_msg(3, "begin")
     print(f"Running pipeline: {pipeline}")
 
-    nf_cmd = f"nextflow {pipeline_script} --input_dir ../pipeline_in/ --read_pattern '*_{{1,2}}.fastq.gz' --output_dir ../upload -with-singularity {pipeline_image} --db {pipeline_human_ref}"
+    nf_cmd = f"nextflow {pipeline_script} {nextflow_additional_params} --input_dir ../pipeline_in/ --read_pattern '*_{{1,2}}.fastq.gz' --output_dir ../upload -with-singularity {pipeline_image} --db {pipeline_human_ref}"
 
 
     new_dir = f"{submission_name}/pipeline_run"
