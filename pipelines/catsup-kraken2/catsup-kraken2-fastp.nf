@@ -19,7 +19,7 @@ log.info """
 ------------------------------------
 SP3 catsup-kraken2 nextflow pipeline
 ------------------------------------
-- Trim using trim_galore
+- Trim using fastq
 - Remove human reads using kraken2
 --input_dir: 	$params.input_dir
 --read_pattern  $params.read_pattern
