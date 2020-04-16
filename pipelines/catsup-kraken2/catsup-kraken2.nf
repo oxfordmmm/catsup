@@ -170,7 +170,11 @@ if (paired == true){
         kraken2 -db ${db} --report ${kraken2_summary} --output ${kraken2_read_classification} --paired ${read1} ${read2}
 
         echo "==== kraken2 ====" > ${kraken2_human_read_list}
-        cat ${kraken2_summary} | grep 9606 >> ${kraken2_human_read_list}
+
+        if [ ! -z `cat ${kraken2_summary} | grep 9606` ]; then
+            cat ${kraken2_summary} | grep 9606 >> ${kraken2_human_read_list}
+        fi
+
         echo "==== human reads ====" >> ${kraken2_human_read_list}
         awk '\$3==\"9606\" { print \$2 }' ${kraken2_read_classification} >> ${kraken2_human_read_list}
         python3 filter.py ${kraken2_read_classification} > ${kraken2_non_human_read_list}
@@ -221,7 +225,11 @@ else{
     kraken2 -db ${db} --report ${kraken2_summary} --output ${kraken2_read_classification} ${read1}
 
     echo "==== kraken2 ====" > ${kraken2_human_read_list}
-    cat ${kraken2_summary} | grep 9606 >> ${kraken2_human_read_list}
+
+    if [ ! -z `cat ${kraken2_summary} | grep 9606` ]; then
+        cat ${kraken2_summary} | grep 9606 >> ${kraken2_human_read_list}
+    fi
+
     echo "==== human reads ====" >> ${kraken2_human_read_list}
     awk '\$3==\"9606\" { print \$2 }' ${kraken2_read_classification} >> ${kraken2_human_read_list}
     python3 filter.py ${kraken2_read_classification} > ${kraken2_non_human_read_list}
