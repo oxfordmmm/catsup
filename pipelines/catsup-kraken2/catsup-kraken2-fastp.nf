@@ -1,13 +1,15 @@
 #!/usr/bin/env nextflow
 
 /* Command line example
-nextflow catsup-kraken2.nf --input_dir /data/qc_test/ --read_pattern '*.{1,2}.fastq.gz' --paired true \
---db /data/references/minikraken2_v2_8GB_201904_UPDATE -with-singularity /data/images/fatos-20200320T140813_2.2.img \
---output_dir out -with-report -resume
 
-nextflow catsup-kraken2.nf --input_dir /data/nano/ --read_pattern '*_1.fastq.gz' --paired false \
---db /data/references/minikraken2_v2_8GB_201904_UPDATE -with-singularity /data/images/fatos-20200320T140813_2.2.img \
---output_dir out -with-report -resume
+nextflow catsup-kraken2-fastp.nf \
+--input_dir data/qc_test/ \
+--read_pattern '*.{1,2}.fastq.gz' \
+--paired true \
+--db /home/ndm.local/weig/catsup_kraken/db/minikraken2_v2_8GB_201904_UPDATE \
+-with-singularity /home/ndm.local/weig/images/fastp.simg \
+--output_dir out \
+-with-report -resume
 
 */
 
@@ -17,9 +19,9 @@ nextflow catsup-kraken2.nf --input_dir /data/nano/ --read_pattern '*_1.fastq.gz'
 log.info "                         "
 log.info """
 ------------------------------------
-SP3 catsup-kraken2 nextflow pipeline
+SP3 catsup-kraken2-fastp nextflow pipeline
 ------------------------------------
-- Trim using fastq
+- Trim using fastp
 - Remove human reads using kraken2
 --input_dir: 	$params.input_dir
 --read_pattern  $params.read_pattern
@@ -48,7 +50,9 @@ else{
 
 /***********
 * PART 1:
-* trim_galore --fastqc --paired ${read1} ${read2}
+* fastp -i in.fq -o out.fq
+* fastp -i in.R1.fq.gz -I in.R2.fq.gz -o out.R1.fq.gz -O out.R2.fq.gz
+* 
 */
 if (paired == true){
 
@@ -78,9 +82,9 @@ if (paired == true){
         # TRIM BEGIN
 
         if [[ \$(zcat ${read1} | head -n4 | wc -l) -eq 0 ]]; then
-        exit 0
+            exit 0
         else
-        trim_galore --fastqc --paired ${read1} ${read2}
+            fastp -i ${read1} -I ${read2} -o out_val_1.fq.gz -O out_val_2.fq.gz
         fi
 
         # TRIM END
@@ -116,7 +120,7 @@ else{
     if [[ \$(zcat ${read1} | head -n4 | wc -l) -eq 0 ]]; then
       exit 0
     else
-      trim_galore --fastqc ${read1}
+      fastp -i ${read1} -o out.fq.gz
     fi
 
     # TRIM END

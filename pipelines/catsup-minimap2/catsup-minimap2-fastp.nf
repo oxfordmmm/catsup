@@ -2,9 +2,13 @@
 
 /* Command line example:
 
-nextflow catsup-minimap2.nf --input_dir /data/qc_test/ --read_pattern '*.{1,2}.fastq.gz' \
---db /data/references/GCA_000001405.15_GRCh38_no_alt_analysis_set.idx \
---output_dir out -with-report -with-singularity /data/images/catsup-minimap2.v0.1.0.img -resume
+nextflow catsup-minimap2-fastp.nf \
+--input_dir data/qc_test/ \
+--read_pattern '*.{1,2}.fastq.gz' \
+--db /home/ndm.local/weig/catsup_kraken/db/minikraken2_v2_8GB_201904_UPDATE \
+--output_dir out \
+-with-report \
+-with-singularity /home/ndm.local/weig/images/fastp.simg -resume
 
 */
 
@@ -16,7 +20,7 @@ log.info """
 -------------------------------------
 SP3 catsup-minimap2 nextflow pipeline
 -------------------------------------
-- Trim using trim_galore
+- Trim using fastp
 - Remove human reads using minimap2                        
 --input_dir: 	  $params.input_dir
 --read_pattern  $params.read_pattern
@@ -39,7 +43,8 @@ Channel.fromFilePairs(input_dir + read_pattern, flat:true).set { fqs }
 
 /***********
 * PART 1: 
-* trim_galore --fastqc --paired ${read1} ${read2} 
+* fastp -i in.fq -o out.fq
+* fastp -i in.R1.fq.gz -I in.R2.fq.gz -o out.R1.fq.gz -O out.R2.fq.gz
 ************/
 
 process process_trim {
@@ -70,7 +75,7 @@ process process_trim {
     if [[ \$(zcat ${forward} | head -n4 | wc -l) -eq 0 ]]; then
       exit 0
     else
-      trim_galore --fastqc --paired ${forward} ${reverse}
+      fastp -i ${forward} -I ${reverse} -o out_val_1.fq.gz -O out_val_2.fq.gz
     fi
 
     # TRIM END
