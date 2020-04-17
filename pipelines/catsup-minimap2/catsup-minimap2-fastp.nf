@@ -3,12 +3,12 @@
 /* Command line example:
 
 nextflow catsup-minimap2-fastp.nf \
---input_dir data/qc_test/ \
+--input_dir /home/ndm.local/weig/catsup/data/qc_test/ \
 --read_pattern '*.{1,2}.fastq.gz' \
 --db /home/ndm.local/weig/catsup_kraken/db/minikraken2_v2_8GB_201904_UPDATE \
---output_dir out \
+--output_dir /home/ndm.local/weig/catsup/out \
 -with-report \
--with-singularity /home/ndm.local/weig/images/fastp.simg -resume
+-with-singularity /home/ndm.local/weig/fatos/fatos.img
 
 */
 
@@ -43,8 +43,7 @@ Channel.fromFilePairs(input_dir + read_pattern, flat:true).set { fqs }
 
 /***********
 * PART 1: 
-* fastp -i in.fq -o out.fq
-* fastp -i in.R1.fq.gz -I in.R2.fq.gz -o out.R1.fq.gz -O out.R2.fq.gz
+* fastp -i in.R1.fq.gz -I in.R2.fq.gz -o out.R1.fq.gz -O out.R2.fq.gz -h out_fastqc.html -j out_trimming_report.json
 ************/
 
 process process_trim {
@@ -75,7 +74,15 @@ process process_trim {
     if [[ \$(zcat ${forward} | head -n4 | wc -l) -eq 0 ]]; then
       exit 0
     else
-      fastp -i ${forward} -I ${reverse} -o out_val_1.fq.gz -O out_val_2.fq.gz
+      fastp \
+        -i ${forward} \
+        -I ${reverse} \
+        -o out_val_1.fq.gz \
+        -O out_val_2.fq.gz \
+        -h out_fastqc.html \
+        -j out_trimming_report.json
+      
+      mv out_trimming_report.json out_trimming_report.txt
     fi
 
     # TRIM END
