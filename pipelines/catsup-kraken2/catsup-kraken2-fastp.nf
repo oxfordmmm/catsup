@@ -2,14 +2,25 @@
 
 /* Command line example
 
-nextflow catsup-kraken2-fastp.nf \
---input_dir data/qc_test/ \
+./nextflow catsup-kraken2-fastp.nf \
+--input_dir /home/ndm.local/weig/catsup/data/qc_test/ \
 --read_pattern '*.{1,2}.fastq.gz' \
 --paired true \
 --db /home/ndm.local/weig/catsup_kraken/db/minikraken2_v2_8GB_201904_UPDATE \
--with-singularity /home/ndm.local/weig/images/fastp.simg \
---output_dir out \
+-with-singularity /home/ndm.local/weig/fatos/fatos.img \
+--output_dir /home/ndm.local/weig/catsup/out \
 -with-report -resume
+
+
+./nextflow catsup-kraken2-fastp.nf \
+--input_dir /home/ndm.local/weig/catsup/data/qc_test/ \
+--read_pattern '*_C{1,2}.fastq.gz' \
+--paired true \
+--db /home/ndm.local/weig/catsup_kraken/db/minikraken2_v2_8GB_201904_UPDATE \
+-with-singularity /home/ndm.local/weig/fatos/fatos.img \
+--output_dir /home/ndm.local/weig/catsup/out \
+-with-report -resume
+
 
 */
 
@@ -50,8 +61,8 @@ else{
 
 /***********
 * PART 1:
-* fastp -i in.fq -o out.fq
-* fastp -i in.R1.fq.gz -I in.R2.fq.gz -o out.R1.fq.gz -O out.R2.fq.gz
+* fastp -i in.fq -o out.fq -h out_fastqc.html -j out_trimming_report.json
+* fastp -i in.R1.fq.gz -I in.R2.fq.gz -o out.R1.fq.gz -O out.R2.fq.gz -h out_fastqc.html -j out_trimming_report.json
 * 
 */
 if (paired == true){
@@ -84,7 +95,15 @@ if (paired == true){
         if [[ \$(zcat ${read1} | head -n4 | wc -l) -eq 0 ]]; then
             exit 0
         else
-            fastp -i ${read1} -I ${read2} -o out_val_1.fq.gz -O out_val_2.fq.gz
+            fastp \
+                -i ${read1} \
+                -I ${read2} \
+                -o out_val_1.fq.gz \
+                -O out_val_2.fq.gz \
+                -h out_fastqc.html \
+                -j out_trimming_report.json
+
+            mv out_trimming_report.json out_trimming_report.txt
         fi
 
         # TRIM END
@@ -120,7 +139,13 @@ else{
     if [[ \$(zcat ${read1} | head -n4 | wc -l) -eq 0 ]]; then
       exit 0
     else
-      fastp -i ${read1} -o out.fq.gz
+      fastp \
+        -i ${read1} \
+        -o out.fq.gz
+        -h out_fastqc.html \
+        -j out_trimming_report.json
+
+      mv out_trimming_report.json out_trimming_report.txt
     fi
 
     # TRIM END
