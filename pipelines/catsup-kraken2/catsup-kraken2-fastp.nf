@@ -4,7 +4,7 @@
 
 ./nextflow catsup-kraken2-fastp.nf \
 --input_dir /home/ndm.local/weig/catsup/data/qc_test/ \
---read_pattern '*.{1,2}.fastq.gz' \
+--read_pattern '*.{1,2}.fq.gz' \
 --paired true \
 --db /home/ndm.local/weig/catsup_kraken/db/minikraken2_v2_8GB_201904_UPDATE \
 -with-singularity /home/ndm.local/weig/fatos/fatos.img \
@@ -61,8 +61,19 @@ else{
 
 /***********
 * PART 1:
-* fastp -i in.fq -o out.fq -h out_fastqc.html -j out_trimming_report.json
-* fastp -i in.R1.fq.gz -I in.R2.fq.gz -o out.R1.fq.gz -O out.R2.fq.gz -h out_fastqc.html -j out_trimming_report.json
+* fastp \
+*   -i human100k.1.fq.gz \
+*   -I human100k.2.fq.gz \
+*   -o human100k.1.out.fq.gz \
+*   -O human100k.2.out.fq.gz \
+*   --unpaired1 unpaired_out.fq.gz \
+*   --unpaired2 unpaired_out.fq.gz \
+*   -h fastp.html \
+*   -j fastp.json \
+*   --length_required 50 \
+*   --cut_tail \
+*   --cut_tail_window_size 1 \
+*   --cut_tail_mean_quality 20
 * 
 */
 if (paired == true){
@@ -100,8 +111,14 @@ if (paired == true){
                 -I ${read2} \
                 -o out_val_1.fq.gz \
                 -O out_val_2.fq.gz \
+                --unpaired1 unpaired_out.fq.gz \
+                --unpaired2 unpaired_out.fq.gz \
                 -h out_fastqc.html \
-                -j out_trimming_report.json
+                -j out_trimming_report.json \
+                --length_required 50 \
+                --cut_tail \
+                --cut_tail_window_size 1 \
+                --cut_tail_mean_quality 20
 
             mv out_trimming_report.json out_trimming_report.txt
         fi
@@ -141,9 +158,14 @@ else{
     else
       fastp \
         -i ${read1} \
-        -o out.fq.gz
+        -o out.fq.gz \
+        --unpaired1 unpaired_out.fq.gz \
         -h out_fastqc.html \
-        -j out_trimming_report.json
+        -j out_trimming_report.json \
+        --length_required 50 \
+        --cut_tail \
+        --cut_tail_window_size 1 \
+        --cut_tail_mean_quality 20
 
       mv out_trimming_report.json out_trimming_report.txt
     fi

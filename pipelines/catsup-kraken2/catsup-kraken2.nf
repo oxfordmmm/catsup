@@ -1,9 +1,15 @@
 #!/usr/bin/env nextflow
 
 /* Command line example
-nextflow catsup-kraken2.nf --input_dir /data/qc_test/ --read_pattern '*.{1,2}.fastq.gz' --paired true \
---db /data/references/minikraken2_v2_8GB_201904_UPDATE -with-singularity /data/images/fatos-20200320T140813_2.2.img \
---output_dir out -with-report -resume
+
+./nextflow catsup-kraken2.nf \
+--input_dir /home/ndm.local/weig/catsup/data/qc_test/ \
+--read_pattern '*.{1,2}.fq.gz' \
+--paired true \
+--db /home/ndm.local/weig/catsup_kraken/db/minikraken2_v2_8GB_201904_UPDATE \
+-with-singularity /home/ndm.local/weig/fatos/fatos.img \
+--output_dir /home/ndm.local/weig/catsup/out \
+-with-report -resume
 
 nextflow catsup-kraken2.nf --input_dir /data/nano/ --read_pattern '*_1.fastq.gz' --paired false \
 --db /data/references/minikraken2_v2_8GB_201904_UPDATE -with-singularity /data/images/fatos-20200320T140813_2.2.img \
