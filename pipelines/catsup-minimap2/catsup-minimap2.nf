@@ -2,9 +2,15 @@
 
 /* Command line example:
 
-nextflow catsup-minimap2.nf --input_dir /data/qc_test/ --read_pattern '*.{1,2}.fastq.gz' \
---db /data/references/GCA_000001405.15_GRCh38_no_alt_analysis_set.idx \
---output_dir out -with-report -with-singularity /data/images/catsup-minimap2.v0.1.0.img -resume
+./nextflow catsup-minimap2.nf \
+--input_dir /home/ndm.local/weig/catsup/data/qc_test/ \
+--read_pattern '*.{1,2}.fq.gz' \
+--paired true \
+--db /home/ndm.local/weig/catsup_kraken/db/minikraken2_v2_8GB_201904_UPDATE \
+-with-singularity /home/ndm.local/weig/fatos/fatos.img \
+--output_dir /home/ndm.local/weig/catsup/out \
+-with-report -resume
+
 
 */
 
