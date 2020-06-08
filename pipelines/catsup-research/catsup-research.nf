@@ -59,7 +59,8 @@ if (paired == true){
         set dataset_id, read1, read2 from fqs_paired
 
         output:
-        set dataset_id, read1, read2 into output
+        file("${dataset_id}_C1.fastq.gz")
+	file("${dataset_id}_C2.fastq.gz")
 
 	script:
 	"""
