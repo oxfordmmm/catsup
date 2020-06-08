@@ -2,15 +2,21 @@
 
 /* Command line example:
 
-./nextflow catsup-minimap2.nf \
+./nextflow catsup-minimap2-fastp.nf \
 --input_dir /home/ndm.local/weig/catsup/data/qc_test/ \
 --read_pattern '*.{1,2}.fq.gz' \
---paired true \
 --db /home/ndm.local/weig/catsup_kraken/db/minikraken2_v2_8GB_201904_UPDATE \
--with-singularity /home/ndm.local/weig/fatos/fatos.img \
 --output_dir /home/ndm.local/weig/catsup/out \
--with-report -resume
+-with-report \
+-with-singularity /home/ndm.local/weig/fatos/fatos.img
 
+./nextflow catsup-minimap2-fastp.nf \
+--input_dir /home/ndm.local/weig/catsup/data/qc_test/ \
+--read_pattern '*_C{1,2}.fastq.gz' \
+--db /home/ndm.local/weig/catsup_kraken/db/minikraken2_v2_8GB_201904_UPDATE \
+--output_dir /home/ndm.local/weig/catsup/out \
+-with-report \
+-with-singularity /home/ndm.local/weig/fatos/fatos.img
 
 */
 
@@ -22,7 +28,7 @@ log.info """
 -------------------------------------
 SP3 catsup-minimap2 nextflow pipeline
 -------------------------------------
-- Trim using trim_galore
+- Trim using fastp
 - Remove human reads using minimap2                        
 --input_dir: 	  $params.input_dir
 --read_pattern  $params.read_pattern
@@ -45,7 +51,20 @@ Channel.fromFilePairs(input_dir + read_pattern, flat:true).set { fqs }
 
 /***********
 * PART 1: 
-* trim_galore --fastqc --paired ${read1} ${read2} 
+* fastp \
+*   -i human100k.1.fq.gz \
+*   -I human100k.2.fq.gz \
+*   -o human100k.1.out.fq.gz \
+*   -O human100k.2.out.fq.gz \
+*   --unpaired1 unpaired_out.fq.gz \
+*   --unpaired2 unpaired_out.fq.gz \
+*   -h fastp.html \
+*   -j fastp.json \
+*   --length_required 50 \
+*   --cut_tail \
+*   --cut_tail_window_size 1 \
+*   --cut_tail_mean_quality 20
+*
 ************/
 
 process process_trim {
@@ -76,7 +95,21 @@ process process_trim {
     if [[ \$(zcat ${forward} | head -n4 | wc -l) -eq 0 ]]; then
       exit 0
     else
-      trim_galore --fastqc --paired ${forward} ${reverse}
+      fastp \
+        -i ${forward} \
+        -I ${reverse} \
+        -o out_val_1.fq.gz \
+        -O out_val_2.fq.gz \
+        --unpaired1 unpaired_out.fq.gz \
+        --unpaired2 unpaired_out.fq.gz \
+        -h out_fastqc.html \
+        -j out_trimming_report.json \
+        --length_required 50 \
+        --cut_tail \
+        --cut_tail_window_size 1 \
+        --cut_tail_mean_quality 20
+      
+      mv out_trimming_report.json out_trimming_report.txt
     fi
 
     # TRIM END
