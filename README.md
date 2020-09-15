@@ -47,9 +47,13 @@ e.g.:
 
 ### step 1:
 
+Command:
 ```
 $ python3 catsup.py testsubmission
+```
 
+Output:
+```
 *** Preprocessing step: user template
 
 Created testsubmission/inputs.csv
@@ -64,9 +68,12 @@ Following instructions, please fill in the inputs.csv spreadsheet and run catsup
 
 ### step 2:
 
+Command:
 ```
 $ python3 catsup.py testsubmission
-
+```
+Output:
+```
 *** Preprocessing step: prepare data
 
 Preparing data for pipeline
@@ -87,9 +94,12 @@ Wrote sample file <-> uuid map to: testsubmission/sample_uuid_map.csv
 
 ### step 3:
 
+Command:
 ```
 $ python3 catsup.py testsubmission
-
+```
+Output:
+```
 *** Preprocessing step: nextflow pipeline
 
 Running pipeline: catsup-kraken2
@@ -103,9 +113,12 @@ Nextflow invocation: nextflow /home/ubuntu/catsup-oxfordmmm/pipelines/catsup-kra
 
 ### step 4:
 
+Command:
 ```
 $ python3 catsup.py testsubmission
-
+```
+Output:
+```
 *** Preprocessing step: s3 upload
 
 Uploading to S3
