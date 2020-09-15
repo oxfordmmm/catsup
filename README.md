@@ -52,6 +52,10 @@ Command:
 $ python3 catsup.py testsubmission
 ```
 
+(Note: you can add your sample directory to this command, and catsup will try to generate a sensible inputs.csv, i.e. ```python3 catsup.py testsubmission /path/to/your/fastqs```. 
+
+You will still need to verify inputs.csv)
+
 Output:
 ```
 *** Preprocessing step: user template
