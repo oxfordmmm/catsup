@@ -23,13 +23,23 @@ Catsup is a python application that helps users to pre-process pathogen sequenci
 
 ## Prerequisites
 
+- Ubuntu 18.04
 - Python 3.6+
+- singularity 2.4.2
+```
+apt install singularity-container
+```
+- java 8
+```
+apt install openjdk-8-jre
+```
 - nextflow
-- s3cmd, with a valid configuration 
+```
+wget https://github.com/nextflow-io/nextflow/releases/download/v19.04.1/nextflow-19.04.1-all && sudo mv nextflow-19.04.1-all /usr/bin/local/nextflow && sudo chmod a+x /usr/bin/local/nextflow
+```
+- s3cmd: ```apt install s3cmd```
 
-Install s3cmd following here: https://s3tools.org/repositories 
-
-Please ask for a SP3 configuration file for your organisation.
+**We need to send you a s3cmd configuration file containing S3 credentials.**
 
 - kraken2 database MiniKraken2_v2_8GB (https://ccb.jhu.edu/software/kraken2/downloads.shtml)
 ```
