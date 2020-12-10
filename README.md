@@ -25,9 +25,21 @@ Catsup is a python application that helps users to pre-process pathogen sequenci
 
 - Python 3.6+
 - nextflow
-- s3cmd, with a valid configuration (https://s3tools.org/repositories for s3cmd installation, ask for a SP3 configuration file for your organisation)
+- s3cmd, with a valid configuration 
+
+Install s3cmd following here: https://s3tools.org/repositories 
+
+Please ask for a SP3 configuration file for your organisation.
+
 - kraken2 database MiniKraken2_v2_8GB (https://ccb.jhu.edu/software/kraken2/downloads.shtml)
-- nextflow pipeline container image: https://files.mmmoxford.uk/f/0c8eb9f9cfd24af8807c/
+```
+wget ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/old/minikraken2_v2_8GB_201904.tgz
+```
+- nextflow pipeline container (https://files.mmmoxford.uk/f/0c8eb9f9cfd24af8807c/)
+
+```
+wget 'https://files.mmmoxford.uk/f/0c8eb9f9cfd24af8807c/?dl=1' --content-disposition
+```
 
 ## Configuration
 
