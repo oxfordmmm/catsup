@@ -37,16 +37,18 @@ apt install openjdk-8-jre
 ```
 wget https://github.com/nextflow-io/nextflow/releases/download/v19.04.1/nextflow-19.04.1-all && sudo mv nextflow-19.04.1-all /usr/bin/local/nextflow && sudo chmod a+x /usr/bin/local/nextflow
 ```
-- s3cmd: ```apt install s3cmd```
+- s3cmd: 
+```
+apt install s3cmd
+```
 
 **We need to send you a s3cmd configuration file containing S3 credentials.**
 
-- kraken2 database MiniKraken2_v2_8GB (https://ccb.jhu.edu/software/kraken2/downloads.shtml)
+- kraken2 database MiniKraken2_v2_8GB
 ```
 wget ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/old/minikraken2_v2_8GB_201904.tgz
 ```
-- nextflow pipeline container (https://files.mmmoxford.uk/f/0c8eb9f9cfd24af8807c/)
-
+- nextflow pipeline container
 ```
 wget 'https://files.mmmoxford.uk/f/0c8eb9f9cfd24af8807c/?dl=1' --content-disposition
 ```
