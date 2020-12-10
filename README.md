@@ -31,7 +31,7 @@ sudo apt install singularity-container
 ```
 - java 8
 ```
-sudo apt install openjdk-8-jre
+sudo apt install openjdk-8-jre-headless
 ```
 - nextflow
 ```
