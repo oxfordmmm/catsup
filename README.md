@@ -41,9 +41,6 @@ wget https://github.com/nextflow-io/nextflow/releases/download/v19.04.1/nextflow
 ```
 apt install s3cmd
 ```
-
-**We need to send you a s3cmd configuration file containing S3 credentials.**
-
 - kraken2 database MiniKraken2_v2_8GB
 ```
 wget ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/old/minikraken2_v2_8GB_201904.tgz
@@ -52,6 +49,12 @@ wget ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/old/minikraken2_v2_8GB_201904.tg
 ```
 wget 'https://files.mmmoxford.uk/f/0c8eb9f9cfd24af8807c/?dl=1' --content-disposition
 ```
+
+## S3 credentials
+
+**We need to send you a s3cmd configuration file containing S3 credentials.**
+
+Contact us to set this up.
 
 ## Configuration
 
