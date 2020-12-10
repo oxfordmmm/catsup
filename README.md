@@ -27,11 +27,11 @@ Catsup is a python application that helps users to pre-process pathogen sequenci
 - Python 3.6+
 - singularity 2.4.2
 ```
-apt install singularity-container
+sudo apt install singularity-container
 ```
 - java 8
 ```
-apt install openjdk-8-jre
+sudo apt install openjdk-8-jre
 ```
 - nextflow
 ```
@@ -39,7 +39,7 @@ wget https://github.com/nextflow-io/nextflow/releases/download/v19.04.1/nextflow
 ```
 - s3cmd: 
 ```
-apt install s3cmd
+sudo apt install s3cmd
 ```
 - kraken2 database MiniKraken2_v2_8GB
 ```
