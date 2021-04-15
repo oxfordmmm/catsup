@@ -83,7 +83,7 @@ if (paired == true){
 
         # TRIM BEGIN
 
-        if [[ \$(zcat ${read1} | head -n4 | wc -l) -eq 0 ]]; then
+        if [[ \$(zcat < ${read1} | head -n4 | wc -l) -eq 0 ]]; then
         exit 0
         else
         trim_galore --fastqc --paired ${read1} ${read2}
@@ -119,7 +119,7 @@ else{
 
     # TRIM BEGIN
 
-    if [[ \$(zcat ${read1} | head -n4 | wc -l) -eq 0 ]]; then
+    if [[ \$(zcat < ${read1} | head -n4 | wc -l) -eq 0 ]]; then
       exit 0
     else
       trim_galore --fastqc ${read1}
@@ -282,8 +282,8 @@ if (paired == true){
             prevLine = line
         EOF
 
-        zcat ${read1} | python3 fixheaders.py | gzip > ${dataset_id}_1.fix
-        zcat ${read2} | python3 fixheaders.py | gzip > ${dataset_id}_2.fix
+        zcat < ${read1} | python3 fixheaders.py | gzip > ${dataset_id}_1.fix
+        zcat < ${read2} | python3 fixheaders.py | gzip > ${dataset_id}_2.fix
 
         seqtk subseq ${dataset_id}_1.fix ${nonhm} | gzip > "${dataset_id}_C1.fastq.gz"
         seqtk subseq ${dataset_id}_2.fix ${nonhm} | gzip > "${dataset_id}_C2.fastq.gz"
@@ -326,7 +326,7 @@ else{
         prevLine = line
     EOF
 
-    zcat ${read1} | python3 fixheaders.py | gzip > ${dataset_id}_1.fix
+    zcat < ${read1} | python3 fixheaders.py | gzip > ${dataset_id}_1.fix
 
     seqtk subseq ${dataset_id}_1.fix ${nonhm} | gzip > "${dataset_id}_C1.fastq.gz"
 

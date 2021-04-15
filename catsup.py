@@ -274,15 +274,16 @@ def run_pipeline():
     pipeline_script = cfg.get("pipelines").get(pipeline).get("script")
     pipeline_image = cfg.get("pipelines").get(pipeline).get("image")
     pipeline_human_ref = cfg.get("pipelines").get(pipeline).get("human_ref")
+    container = cfg.get("container")
     nextflow_additional_params = cfg.get("nextflow_additional_params")
 
     step_msg(3, "begin")
     print(f"Running pipeline: {pipeline}")
 
     if number_of_files_per_sample == 2:
-        nf_cmd = f"nextflow {pipeline_script} {nextflow_additional_params} --input_dir ../pipeline_in/ --read_pattern '*_{{1,2}}.fastq.gz' --paired true --output_dir ../upload -with-singularity {pipeline_image} --db {pipeline_human_ref}"
+        nf_cmd = f"nextflow {pipeline_script} {nextflow_additional_params} --input_dir ../pipeline_in/ --read_pattern '*_{{1,2}}.fastq.gz' --paired true --output_dir ../upload -with-{container} {pipeline_image} --db {pipeline_human_ref}"
     if number_of_files_per_sample == 1:
-        nf_cmd = f"nextflow {pipeline_script} {nextflow_additional_params} --input_dir ../pipeline_in/ --read_pattern '*_1.fastq.gz' --paired false --output_dir ../upload -with-singularity {pipeline_image} --db {pipeline_human_ref}"
+        nf_cmd = f"nextflow {pipeline_script} {nextflow_additional_params} --input_dir ../pipeline_in/ --read_pattern '*_1.fastq.gz' --paired false --output_dir ../upload -with-{container} {pipeline_image} --db {pipeline_human_ref}"
 
     new_dir = f"{submission_name}/pipeline_run"
     pathlib.Path(new_dir).mkdir(exist_ok=True)

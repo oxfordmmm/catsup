@@ -1,0 +1,10 @@
+name: catsup
+channels:
+  - javascript
+  - bioconda
+dependencies:
+  - python=3.6
+  - kraken2
+  - s3cmd
+  - nextflow
+  - trim-galore
