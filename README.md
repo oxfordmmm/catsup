@@ -24,7 +24,7 @@ There is a video recorded about [how to install and run Catsup](https://www.yout
 10. Upload cleaned (no human reads) sample files to S3 buckets
 
 ## Prerequisites
-
+# Ubuntu/Singularity
 - Ubuntu 18.04
 - Python 3.6+
 - singularity 2.4.2
@@ -51,6 +51,45 @@ wget ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/old/minikraken2_v2_8GB_201904.tg
 ```
 wget 'https://files.mmmoxford.uk/f/0c8eb9f9cfd24af8807c/?dl=1' --content-disposition
 ```
+
+# conda
+- create conda environment
+```
+conda env create -f environment.yml
+```
+- activate environment
+```
+conda activate catsup
+```
+- example config for conda on MacOS
+```json
+{
+    "number_of_example_samples": 4,
+    "number_of_files_per_sample": 2,
+    "pipeline": "catsup-kraken2",
+    "container":"conda",
+    "nextflow_additional_params": "-process.executor local",
+    "pipelines":
+    {
+	"catsup-kraken2":
+	{
+	    "script": "/Users/nick/soft/catsup/pipelines/catsup-kraken2/catsup-kraken2.nf",
+	    "image": "/Users/nick/miniconda3/envs/catsup",
+	    "human_ref": "/Users/nick/dbs/kraken2/minikraken2_v2_8GB_201904_UPDATE"
+	}
+
+    },
+    "upload":
+    {
+	"s3":
+	{
+	    "bucket": "s3://catsup",
+	    "s3cmd-config": "/Users/nick/.s3cfg-catsup"
+	}
+    }
+}
+```
+
 
 ## S3 credentials
 
