@@ -2,9 +2,11 @@ name: catsup
 channels:
   - javascript
   - bioconda
+  - conda-forge
 dependencies:
   - python=3.6
-  - kraken2
+  - kraken2=2.1.1
   - s3cmd
-  - nextflow
-  - trim-galore
+  - nextflow=21.04.0
+  - trim-galore=0.6.6
+  - seqtk=1.3
