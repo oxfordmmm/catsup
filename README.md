@@ -51,7 +51,7 @@ Note that this was only tested on Ubuntu 18.04. However, it should be unaffected
 - OS supported by conda
 
 ## Installation
-Once you have decided on which method to use from above, following one of these installation instructions:
+Once you have decided on which method to use from above, follow one of these installation instructions:
 
 ### Ubuntu/singularity installation
 ```
@@ -143,6 +143,7 @@ Following instructions, please fill in the inputs.csv spreadsheet and run catsup
 - The `sample_name` column should be edited to only contain the sample name. For example if you have two fastq files `sample_R1.fastq.gz`, `sample_R2.fastq.gz`, the sample name column should only contain `sample`.
 - The `sample_file_extension` can be either `fastq.gz` or `bam`. This field tells us what TYPE of file you have. It does not depend on the actual file name - for example, if your file names end with `fq.gz`, the column should still be filled with `fastq.gz`
 - The index and subindex denote which sample and which file for the sample the row represents. For example, for paired fastq files, the index and subindex would be
+
 | index | subindex |
 | ---   | ---      |
 | 1     | 1        |
