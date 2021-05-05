@@ -3,6 +3,7 @@
     "number_of_files_per_sample": 2,
     "pipeline": "catsup-kraken2",
     "nextflow_additional_params": "-process.executor slurm",
+    "container": "singularity",
     "pipelines":
     {
 	"catsup-kraken2":
