@@ -24,10 +24,36 @@ There is a video recorded about [how to install and run Catsup](https://www.yout
 10. Upload cleaned (no human reads) sample files to S3 buckets
 
 ## Prerequisites
-### Ubuntu/Singularity
+
+Catsup requires a certain amount of familiarity with "Linux-type" work. Please consult with your local system administrator if anything is unclear.
+
+### Hardware
+
+We assume you will be running this on a dedicated machine or virtual machine. You should avoid running catsup pipelines on systems that are using a significant amount of memory for something else. This is because nextflow assumes that all the memory on the machine is available for the pipeline. Running this on eg. a laptop with a browser open may result in random failures due to out of memory errors.
+
+The exception to this is if you are running the pipeline on a cluster and have set catsup/nextflow to use the cluster executor like slurm.
+
+You should avoid running this on an unreliable internet connection. The last step of catsup is file upload to S3. If it fails in this step due to your internet connection, you can run the same command again to attempt uploading again.
+
+### Software
+There are two ways to install the software and pipeline prerequisites in catsup: You can use a singularity container image, or you can install the software through Conda:
+
+#### Ubuntu/singularity prerequisites
+Note that we only support Ubuntu 18.04 for this method! Specifically, there is a known issue in Ubuntu 20.04 (kernel 5.3) that prevents singularity containers from working.
+
 - Ubuntu 18.04
 - Python 3.6+
 - singularity 2.4.2
+
+#### Conda prerequisites
+Note that this was only tested on Ubuntu 18.04. However, it should be unaffected by the aformentioned bug.
+
+- OS supported by conda
+
+## Installation
+Once you have decided on which method to use from above, following one of these installation instructions:
+
+### Ubuntu/singularity installation
 ```
 sudo apt install singularity-container
 ```
@@ -39,7 +65,7 @@ sudo apt install openjdk-8-jre-headless
 ```
 wget https://github.com/nextflow-io/nextflow/releases/download/v19.04.1/nextflow-19.04.1-all && sudo mv nextflow-19.04.1-all /usr/bin/local/nextflow && sudo chmod a+x /usr/bin/local/nextflow
 ```
-- s3cmd: 
+- s3cmd:
 ```
 sudo apt install s3cmd
 ```
@@ -52,7 +78,9 @@ wget ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/old/minikraken2_v2_8GB_201904.tg
 wget 'https://files.mmmoxford.uk/f/0c8eb9f9cfd24af8807c/?dl=1' --content-disposition
 ```
 
-### conda
+### conda installation
+Please install conda (downloading and install miniconda3 for your system)
+
 - create conda environment
 ```
 conda env create -f environment.yml
@@ -61,36 +89,6 @@ conda env create -f environment.yml
 ```
 conda activate catsup
 ```
-- example config for conda on MacOS
-```json
-{
-    "number_of_example_samples": 4,
-    "number_of_files_per_sample": 2,
-    "pipeline": "catsup-kraken2",
-    "container":"conda",
-    "nextflow_additional_params": "-process.executor local",
-    "pipelines":
-    {
-	"catsup-kraken2":
-	{
-	    "script": "/Users/nick/soft/catsup/pipelines/catsup-kraken2/catsup-kraken2.nf",
-	    "image": "/Users/nick/miniconda3/envs/catsup",
-	    "human_ref": "/Users/nick/dbs/kraken2/minikraken2_v2_8GB_201904_UPDATE"
-	}
-
-    },
-    "upload":
-    {
-	"s3":
-	{
-	    "bucket": "s3://catsup",
-	    "s3cmd-config": "/Users/nick/.s3cfg-catsup"
-	}
-    }
-}
-```
-
-
 ## S3 credentials
 
 **We need to send you a s3cmd configuration file containing S3 credentials.**
@@ -101,9 +99,11 @@ Contact us to set this up.
 
 run catsup.py once. This will copy config.json-example to config.json.
 
+NOTE: If you are using the conda installation method, please copy the file config.json-example-conda to config.json manually.
+
 Edit config.json to suit your environment.
 
-Please note that the paths in the config must be absolute
+Please note that the paths in the config must be absolute (i.e. must start with a '/')
 
 ## Running
 
@@ -120,7 +120,7 @@ Command:
 $ python3 catsup.py testsubmission
 ```
 
-(Note: you can add your sample directory to this command, and catsup will try to generate a sensible inputs.csv, i.e. ```python3 catsup.py testsubmission /path/to/your/fastqs```. 
+(Note: you can add your sample directory to this command, and catsup will try to generate a sensible inputs.csv, i.e. ```python3 catsup.py testsubmission /path/to/your/fastqs```.
 
 You will still need to verify inputs.csv)
 
@@ -137,6 +137,22 @@ Edit the file to add your samples.
 ```
 
 Following instructions, please fill in the inputs.csv spreadsheet and run catsup again.
+
+#### SOME IMPORTANT NOTES ON EDITING INPUT.CSV
+
+- The `sample_name` column should be edited to only contain the sample name. For example if you have two fastq files `sample_R1.fastq.gz`, `sample_R2.fastq.gz`, the sample name column should only contain `sample`.
+- The `sample_file_extension` can be either `fastq.gz` or `bam`. This field tells us what TYPE of file you have. It does not depend on the actual file name - for example, if your file names end with `fq.gz`, the column should still be filled with `fastq.gz`
+- The index and subindex denote which sample and which file for the sample the row represents. For example, for paired fastq files, the index and subindex would be
+| index | subindex |
+| ---   | ---      |
+| 1     | 1        |
+| 1     | 2        |
+| 2     | 1        |
+| 2     | 2        |
+| 3     | 1        |
+| 3     | 2        |
+
+and so on.
 
 ### step 2:
 
@@ -208,7 +224,7 @@ Example files are in folder examples.
 ### User template example (input.csv)
 
 | index | subindex | sample_name | sample_filename | sample_file_extension | sample_host | sample_collection_date | sample_country | submission_title | submission_description | submitter_organisation | submitter_email | instrument_platform | instrument_model | instrument_flowcell |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | 
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 1 | 1 | P0001 | in/P0001_1.fastq.gz | fastq.gz | Homo sapiens | 2020-01-30 | United Kingdom | Bacteria infection study | Bacteria infection study for drug resistance | University of Oxford | crookit@ndm.ox.ac.uk | Illumina pair-ended sequencing | Illumina HiSeq 4000 | 96
 1 | 2 | P0001 | in/P0001_2.fastq.gz | fastq.gz | Homo sapiens | 2020-01-30 | United Kingdom | Bacteria infection study | Bacteria infection study for drug resistance | University of Oxford | crookit@ndm.ox.ac.uk | Illumina pair-ended sequencing | Illumina HiSeq 4000 | 96
 2 | 1 | P0002 | in/P0002_1.fastq.gz | fastq.gz | Homo sapiens | 2020-01-30 | United Kingdom | Bacteria infection study | Bacteria infection study for drug resistance | University of Oxford | crookit@ndm.ox.ac.uk | Illumina pair-ended sequencing | Illumina HiSeq 4000 | 96
