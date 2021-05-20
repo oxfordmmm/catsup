@@ -95,6 +95,18 @@ conda activate catsup
 
 Contact us to set this up.
 
+## Using Oracle pre-authenticated requests
+
+To use PARs, please change the config, deleting the `bucket` and `s3cmd-config` keys, and add a `par_url` key, i.e. your upload section should look like this:
+
+```
+    "upload": {
+	"s3": {
+	    "par_url": "https://objectstorage.uk-london-1.oraclecloud.com/p/...",
+	}
+    }
+```
+
 ## Configuration
 
 run catsup.py once. This will copy config.json-example to config.json.
@@ -209,14 +221,14 @@ Output:
 ```
 *** Preprocessing step: s3 upload
 
+Note: if you're using Oracle pre-authenticated requests, your output will be different. The result will be the same though.
+
 Uploading to S3
 s3cmd invocation: s3cmd -c /home/ubuntu/.s3cfg-catsup put testsubmission/upload/46a76f9e-07a4-4646-a686-39351cf8c8d0_C1.fastq.gz testsubmission/upload/4074a583-d5be-4c8c-b578-93623b110e94_C2.fastq.gz testsubmission/upload/2149752c-375f-4f47-9884-771d6a95c06d_C2.fastq.gz testsubmission/upload/2149752c-375f-4f47-9884-771d6a95c06d_C1.fastq.gz testsubmission/upload/46a76f9e-07a4-4646-a686-39351cf8c8d0_C2.fastq.gz testsubmission/upload/4074a583-d5be-4c8c-b578-93623b110e94_C1.fastq.gz s3://mmm-sp3-alpha/34113c20-db51-400f-8952-9c5868c5fcee/
 Uploaded files to: s3://mmm-sp3-alpha/34113c20-db51-400f-8952-9c5868c5fcee
 
 *** Finished preprocessing step: s3 upload
 ```
-
-
 
 ## Example files
 Example files are in folder examples.
