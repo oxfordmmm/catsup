@@ -3,6 +3,7 @@
 import csv, logging, pathlib, sys, uuid, copy, os, collections, shutil, subprocess, shlex, json, shutil
 
 import validate
+import par_upload
 
 cfg = None
 def read_cfg(cfg_file, cfg_file_example):
@@ -304,14 +305,23 @@ def upload_to_sp3():
     shutil.copy(s,d)
 
     bucket = cfg.get("upload").get("s3").get("bucket")
-    s3cmd_config = cfg.get("upload").get("s3").get("s3cmd-config")
-    files = ' '.join([str(x) for x in pathlib.Path(f'{submission_name}/upload/').glob('*')])
-    s3cmd = f"s3cmd -c {s3cmd_config} put {files} {bucket}/{submission_uuid4}/"
+    par_url = cfg.get("upload").get("s3").get("par_url")
+    if not bucket and not par_url:
+        logging.error(f"You need either an upload.s3.bucket key or an upload.s3.par_url key")
+        sys.exit(1)
 
-    print(f"s3cmd invocation: {s3cmd}")
-    p = subprocess.check_output(shlex.split(s3cmd))
+    if par_url:
+        # upload to oracle s3 with preauthenticated request
+        par_upload.upload_run(par_url, submission_name)
 
-    print(f"Uploaded files to: {bucket}/{submission_uuid4}")
+    if bucket:
+        # upload to bucket with s3cmd
+        s3cmd_config = cfg.get("upload").get("s3").get("s3cmd-config")
+        files = ' '.join([str(x) for x in pathlib.Path(f'{submission_name}/upload/').glob('*')])
+        s3cmd = f"s3cmd -c {s3cmd_config} put {files} {bucket}/{submission_uuid4}/"
+        print(f"s3cmd invocation: {s3cmd}")
+        p = subprocess.check_output(shlex.split(s3cmd))
+        print(f"Uploaded files to: {bucket}/{submission_uuid4}")
 
     step_msg(4, "end")
 
