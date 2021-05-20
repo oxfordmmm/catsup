@@ -103,6 +103,8 @@ NOTE: If you are using the conda installation method, please copy the file confi
 
 Edit config.json to suit your environment.
 
+If you are not using a SLURM cluter (i.e. you are running catsup on a single machine), remove "-process.executor slurm" from "nextflow_additional_params" in config.json
+
 Please note that the paths in the config must be absolute (i.e. must start with a '/')
 
 ## Running
