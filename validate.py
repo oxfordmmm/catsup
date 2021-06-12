@@ -76,7 +76,7 @@ def validate_config(config):
         logging.error("Failed to validate config:")
         logging.error("Key pipeline is not a string")
         return False
-    
+
     if type(pipelines) != dict:
         logging.error("Failed to validate config:")
         logging.error("Key pipelines is not a dict")
@@ -88,7 +88,7 @@ def validate_config(config):
         return False
 
     pipeline_must_have_keys = ['script', 'image', 'human_ref']
-    
+
     for pipeline_name, pipeline_conf in pipelines.items():
         if type(pipeline_conf) != dict:
             logging.error("Failed to validate config:")
@@ -109,16 +109,25 @@ def validate_config(config):
 
     if 'upload' in config:
         if 's3' in config['upload']:
-            s3_must_have_keys = ['bucket', 's3cmd-config']
-            for upload_must_have_key in s3_must_have_keys:
-                if upload_must_have_key not in config['upload']['s3']:
+            if 'bucket' in config['upload']['s3']:
+                s3_must_have_keys = ['bucket', 's3cmd-config']
+                for upload_must_have_key in s3_must_have_keys:
+                    if upload_must_have_key not in config['upload']['s3']:
+                        logging.error("Failed to validate config:")
+                        logging.error(f"S3 config s3: key {upload_must_have_key} does not exist")
+                        return False
+                cfg_file = config['upload']['s3']['s3cmd-config']
+                if not validate_filepath(cfg_file):
                     logging.error("Failed to validate config:")
-                    logging.error(f"S3 config s3: key {upload_must_have_key} does not exist")
+                    logging.error(f"S3 config file: file {cfg_file} does not exist")
                     return False
-            cfg_file = config['upload']['s3']['s3cmd-config']
-            if not validate_filepath(cfg_file):
+            elif 'par_url' in config['upload']['s3']:
+                pass
+            else:
                 logging.error("Failed to validate config:")
-                logging.error(f"S3 config file: file {cfg_file} does not exist")
-                return False   
-    
+                logging.error(f"S3 config: you need either a bucket or par_url key in upload.s3")
+                return False
+
+
+
     return True

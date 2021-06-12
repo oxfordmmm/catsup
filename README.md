@@ -51,7 +51,7 @@ Note that this was only tested on Ubuntu 18.04. However, it should be unaffected
 - OS supported by conda
 
 ## Installation
-Once you have decided on which method to use from above, following one of these installation instructions:
+Once you have decided on which method to use from above, follow one of these installation instructions:
 
 ### Ubuntu/singularity installation
 ```
@@ -95,6 +95,18 @@ conda activate catsup
 
 Contact us to set this up.
 
+## Using Oracle pre-authenticated requests
+
+To use PARs, please change the config, deleting the `bucket` and `s3cmd-config` keys, and add a `par_url` key, i.e. your upload section should look like this:
+
+```
+    "upload": {
+	"s3": {
+	    "par_url": "https://objectstorage.uk-london-1.oraclecloud.com/p/...",
+	}
+    }
+```
+
 ## Configuration
 
 run catsup.py once. This will copy config.json-example to config.json.
@@ -102,6 +114,8 @@ run catsup.py once. This will copy config.json-example to config.json.
 NOTE: If you are using the conda installation method, please copy the file config.json-example-conda to config.json manually.
 
 Edit config.json to suit your environment.
+
+If you are not using a SLURM cluter (i.e. you are running catsup on a single machine), remove "-process.executor slurm" from "nextflow_additional_params" in config.json
 
 Please note that the paths in the config must be absolute (i.e. must start with a '/')
 
@@ -143,6 +157,7 @@ Following instructions, please fill in the inputs.csv spreadsheet and run catsup
 - The `sample_name` column should be edited to only contain the sample name. For example if you have two fastq files `sample_R1.fastq.gz`, `sample_R2.fastq.gz`, the sample name column should only contain `sample`.
 - The `sample_file_extension` can be either `fastq.gz` or `bam`. This field tells us what TYPE of file you have. It does not depend on the actual file name - for example, if your file names end with `fq.gz`, the column should still be filled with `fastq.gz`
 - The index and subindex denote which sample and which file for the sample the row represents. For example, for paired fastq files, the index and subindex would be
+
 | index | subindex |
 | ---   | ---      |
 | 1     | 1        |
@@ -209,14 +224,14 @@ Output:
 ```
 *** Preprocessing step: s3 upload
 
+Note: if you're using Oracle pre-authenticated requests, your output will be different. The result will be the same though.
+
 Uploading to S3
 s3cmd invocation: s3cmd -c /home/ubuntu/.s3cfg-catsup put testsubmission/upload/46a76f9e-07a4-4646-a686-39351cf8c8d0_C1.fastq.gz testsubmission/upload/4074a583-d5be-4c8c-b578-93623b110e94_C2.fastq.gz testsubmission/upload/2149752c-375f-4f47-9884-771d6a95c06d_C2.fastq.gz testsubmission/upload/2149752c-375f-4f47-9884-771d6a95c06d_C1.fastq.gz testsubmission/upload/46a76f9e-07a4-4646-a686-39351cf8c8d0_C2.fastq.gz testsubmission/upload/4074a583-d5be-4c8c-b578-93623b110e94_C1.fastq.gz s3://mmm-sp3-alpha/34113c20-db51-400f-8952-9c5868c5fcee/
 Uploaded files to: s3://mmm-sp3-alpha/34113c20-db51-400f-8952-9c5868c5fcee
 
 *** Finished preprocessing step: s3 upload
 ```
-
-
 
 ## Example files
 Example files are in folder examples.
