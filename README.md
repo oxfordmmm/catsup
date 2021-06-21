@@ -75,7 +75,7 @@ wget ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/old/minikraken2_v2_8GB_201904.tg
 ```
 - nextflow pipeline container
 ```
-wget 'https://files.mmmoxford.uk/f/0c8eb9f9cfd24af8807c/?dl=1' --content-disposition
+wget 'https://objectstorage.uk-london-1.oraclecloud.com/n/lrbvkel2wjot/b/sp3_deps/o/fatos-20200320T140813_2.2.img' --content-disposition
 ```
 
 ### conda installation
