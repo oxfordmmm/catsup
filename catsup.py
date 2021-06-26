@@ -115,12 +115,17 @@ def step_msg(step, state, **kwargs):
         if step+1 in steps:
             print(f"\n*** Next step: {steps[step+1]}\n")
 
-def create_template(args):
+def create_template(submission_name, args, api=False):
     step_msg(1, "begin")
+    pathlib.Path(submission_name).mkdir(exist_ok=True)
     input_csv = pathlib.Path(submission_name) / in_csv_name
     if input_csv.exists():
-        logging.error(f'File {input_csv} exists. Won\'t overwrite.')
-        sys.exit(1)
+        if api:
+            return { "status": "error",
+                     "reason": "input_csv_exists" }
+        else:
+            logging.error(f'File {input_csv} exists. Won\'t overwrite.')
+            sys.exit(1)
 
     if args:
         directory = pathlib.Path(args[0])
@@ -131,6 +136,11 @@ def create_template(args):
                 writer.writeheader()
                 for row in make_example_entries(len(files) // number_of_files_per_sample, files):
                     writer.writerow(row)
+        else:
+            return { "status": "error",
+                     "reason": "files_dir_missing" }
+            
+                    
     else:
         with open(input_csv, 'w', newline='') as csvfile:
             writer = csv.DictWriter(csvfile, fieldnames=in_fieldnames)
@@ -144,8 +154,10 @@ def create_template(args):
 
     step_msg(1, "end")
 
-
-
+    if api:
+        return { "status": "success",
+                 "input_csv": input_csv }
+                 
 sample_guid_map = dict()
 def sample_name_to_guid(sample_name):
     """
@@ -345,7 +357,7 @@ def main():
     elif input_csv.exists():
         prepare_data()
     else:
-        create_template(sys.argv[2:])
+        create_template(submission_name, sys.argv[2:])
 
 if __name__ == '__main__':
     main()
