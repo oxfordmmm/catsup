@@ -3,9 +3,10 @@
 import csv, logging, pathlib, json
 import re
 
-in_fieldnames_date_fields = ['sample_collection_date']
-in_fieldnames_email_fields = ['submitter_email']
-in_fieldnames_filepath_fields = ['sample_filename']
+in_fieldnames_date_fields = ["sample_collection_date"]
+in_fieldnames_email_fields = ["submitter_email"]
+in_fieldnames_filepath_fields = ["sample_filename"]
+
 
 def validate_date(s):
     try:
@@ -22,15 +23,18 @@ def validate_date(s):
     except:
         return False
 
+
 def validate_email(s):
-    regex = '^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$'
-    if(re.search(regex,s)):
+    regex = "^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$"
+    if re.search(regex, s):
         return True
     else:
         return False
 
+
 def validate_filepath(s):
     return pathlib.Path(s).exists()
+
 
 def validate_template(reader):
     failed = False
@@ -55,13 +59,19 @@ def validate_template(reader):
                 failed = True
     return not failed
 
+
 def validate_config(config):
     if type(config) != dict:
         logging.error("Failed to validate config:")
         logging.error("Config is not a dictionary")
         return False
 
-    must_have_keys = ['number_of_example_samples', 'pipeline', 'pipelines', 'nextflow_additional_params']
+    must_have_keys = [
+        "number_of_example_samples",
+        "pipeline",
+        "pipelines",
+        "nextflow_additional_params",
+    ]
 
     for must_have_key in must_have_keys:
         if must_have_key not in config:
@@ -69,7 +79,7 @@ def validate_config(config):
             logging.error(f"Key '{must_have_key}' missing from config")
             return False
 
-    pipeline = config['pipeline']
+    pipeline = config["pipeline"]
     pipelines = config["pipelines"]
 
     if type(pipeline) != str:
@@ -87,7 +97,7 @@ def validate_config(config):
         logging.error(f"Pipeline {pipeline} has no configuration")
         return False
 
-    pipeline_must_have_keys = ['script', 'image', 'human_ref']
+    pipeline_must_have_keys = ["script", "image", "human_ref"]
 
     for pipeline_name, pipeline_conf in pipelines.items():
         if type(pipeline_conf) != dict:
@@ -98,36 +108,42 @@ def validate_config(config):
         for pipeline_must_have_key in pipeline_must_have_keys:
             if pipeline_must_have_key not in pipeline_conf:
                 logging.error("Failed to validate config:")
-                logging.error(f"{pipeline_name} config is missing key {pipeline_must_have_key}")
+                logging.error(
+                    f"{pipeline_name} config is missing key {pipeline_must_have_key}"
+                )
                 return False
 
         for k, v in pipeline_conf.items():
             if not pathlib.Path(v).exists():
                 logging.error("Failed to validate config:")
-                logging.error(f"Pipeline config {pipeline_name}: file {v} does not exist")
+                logging.error(
+                    f"Pipeline config {pipeline_name}: file {v} does not exist"
+                )
                 return False
 
-    if 'upload' in config:
-        if 's3' in config['upload']:
-            if 'bucket' in config['upload']['s3']:
-                s3_must_have_keys = ['bucket', 's3cmd-config']
+    if "upload" in config:
+        if "s3" in config["upload"]:
+            if "bucket" in config["upload"]["s3"]:
+                s3_must_have_keys = ["bucket", "s3cmd-config"]
                 for upload_must_have_key in s3_must_have_keys:
-                    if upload_must_have_key not in config['upload']['s3']:
+                    if upload_must_have_key not in config["upload"]["s3"]:
                         logging.error("Failed to validate config:")
-                        logging.error(f"S3 config s3: key {upload_must_have_key} does not exist")
+                        logging.error(
+                            f"S3 config s3: key {upload_must_have_key} does not exist"
+                        )
                         return False
-                cfg_file = config['upload']['s3']['s3cmd-config']
+                cfg_file = config["upload"]["s3"]["s3cmd-config"]
                 if not validate_filepath(cfg_file):
                     logging.error("Failed to validate config:")
                     logging.error(f"S3 config file: file {cfg_file} does not exist")
                     return False
-            elif 'par_url' in config['upload']['s3']:
+            elif "par_url" in config["upload"]["s3"]:
                 pass
             else:
                 logging.error("Failed to validate config:")
-                logging.error(f"S3 config: you need either a bucket or par_url key in upload.s3")
+                logging.error(
+                    f"S3 config: you need either a bucket or par_url key in upload.s3"
+                )
                 return False
-
-
 
     return True

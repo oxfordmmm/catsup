@@ -1,7 +1,7 @@
 {% extends "base.jinja2" %}
 {% block content %}
 
-  <h1>Step 2: Edit Submission Metadata</h1>
+  <h1>Step 1: Edit Submission Metadata</h1>
   <h2>Submission name: {{ submission_name }}</h2>
 
   {% if error_msg %}
@@ -27,46 +27,45 @@
   <form method="POST">
     {% for row in csv %}
       <div style="padding-bottom: 10px;" class="w3-container {% if loop.index % 2 == 0 %}w3-white{% else %}w3-pale-green{% endif %}">
-	<h2><span class="w3-badge w3-green">#{{ row['index'] }}</span> <span class="w3-badge w3-blue">#{{ row['subindex'] }}</span></h2>
-	{% for item_name, item_value in row.items() %}
-	  {% if item_name in items_display_names %}
-	    <label>{{ item_name|replace("_", " ")|capitalize }}</label>
-	    {% if item_name in items_override_names and 'XX-1-1-' + item_name in overrides %}
-	      <input class="w3-input" type="text" name="XX-{{ row['index'] }}-{{ row['subindex'] }}-{{ item_name }}" value="{{ overrides['XX-1-1-' + item_name] }}"/>
-	    {% else %}
-	      {% if item_name == "sample_name" and truncate_sample_name|int != 0 %}
-		<input class="w3-input" type="text" name="XX-{{ row['index'] }}-{{ row['subindex'] }}-{{ item_name }}" value="{{ item_value[:-(truncate_sample_name|int)] }}" {% if item_name in items_noedit_list %}disabled="disabled"{% endif %}/>
-	      {% else %}
-		<input class="w3-input" type="text" name="XX-{{ row['index'] }}-{{ row['subindex'] }}-{{ item_name }}" value="{{ item_value }}" {% if item_name in items_noedit_list %}disabled="disabled"{% endif %}/>
-		{% if item_name == "sample_filename" %}
-		  <br/>
-		{% endif %}
-	      {% endif %}
-	    {% endif %}
-	  {% else %}
-	    <input type="hidden" name="XX-{{ row['index'] }}-{{ row['subindex'] }}-{{ item_name }}" value="{{ item_value }}"/>
-  	  {% endif %}
-	{% endfor %}
-	{% if loop.index == 1 %}
-	  <br/>
-	  <label><strong>Remove # of characters from the end of the sample name column:</strong></label>
-	  <input class="w3-input" type="number" name="truncate_sample_name" value="{{ truncate_sample_name }}"/>
-	  <label><strong>Press 'Apply' to apply the metadata above to all following samples</strong></label>
-	  <br/>
-	  <button name="apply_metadata" class="w3-input w3-red">Apply</button>
+        <h2><span class="w3-badge w3-green">#{{ row['index'] }}</span> <span class="w3-badge w3-blue">#{{ row['subindex'] }}</span></h2>
+        {% for item_name, item_value in row.items() %}
+          {% if item_name in items_display_names %}
+            <label>{{ item_name|replace("_", " ")|capitalize }}</label>
+            {% if item_name in items_override_names and 'XX-1-1-' + item_name in overrides %}
+              <input class="w3-input" type="text" name="XX-{{ row['index'] }}-{{ row['subindex'] }}-{{ item_name }}" value="{{ overrides['XX-1-1-' + item_name] }}"/>
+            {% else %}
+              {% if item_name == "sample_name" and truncate_sample_name|int != 0 %}
+                <input class="w3-input" type="text" name="XX-{{ row['index'] }}-{{ row['subindex'] }}-{{ item_name }}" value="{{ item_value[:-(truncate_sample_name|int)] }}" {% if item_name in items_noedit_list %}disabled="disabled"{% endif %}/>
+              {% else %}
+                {% if item_name in items_noedit_list %}
+                  <input class="w3-input" type="text" name="XX-{{ row['index'] }}-{{ row['subindex'] }}-{{ item_name }}" value="{{ item_value }}" disabled="disabled"/>
+                  <input class="w3-input" type="hidden" name="XX-{{ row['index'] }}-{{ row['subindex'] }}-{{ item_name }}" value="{{ item_value }}"/>
+                {% else %}
+                  <input class="w3-input" type="text" name="XX-{{ row['index'] }}-{{ row['subindex'] }}-{{ item_name }}" value="{{ item_value }}"/>
+                {% endif %}
+                {% if item_name == "sample_filename" %}
+                  <br/>
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% else %}
+            <input type="hidden" name="XX-{{ row['index'] }}-{{ row['subindex'] }}-{{ item_name }}" value="{{ item_value }}"/>
+          {% endif %}
+        {% endfor %}
+        {% if loop.index == 1 %}
+          <br/>
+          <label><strong>Remove # of characters from the end of the sample name column:</strong></label>
+          <input class="w3-input" type="number" name="truncate_sample_name" value="{{ truncate_sample_name }}"/>
+          <label><strong>Press 'Apply' to apply the metadata above to all following samples</strong></label>
+          <br/>
+          <button name="apply_metadata" class="w3-input w3-red">Apply</button>
       {% endif %}
       </div>
       <br/>
     {% endfor %}
-  <button name="submit_confirm" class="w3-input w3-blue">Submit</button>
+  <input class="w3-input w3-blue" type="submit" name="submit_btn" value="Next step"/>
   </form>
   <br/>
-    
-    
-  </form>
-
-    <br/><br/><br/>
-    {{ overrides['XX-1-1-sample_name'] }}
-
+  <br/>
 
 {% endblock content %}

@@ -1,0 +1,33 @@
+{% extends 'base.jinja2' %}
+{% block content %}
+
+  <h1>Step 4: Upload to cloud storage</h1>
+
+  {% if running %}
+    <div class="w3-panel w3-pale-red">
+      <h2>Running...</h2>
+      <p>The upload client is uploading your data.</p>
+      <p>This page will refresh periodically and you will be notified when the process is finished.</p>
+    </div>
+  {% elif ok %}
+    <div class="w3-panel w3-light-blue">
+      <h2>Success!</h2>
+      <p>The data has been uploaded.</p>
+      <p><strong>Your upload identifier is <span class="w3-green" style="padding: 2px;font-family: monospace;">{{fetch_uuid}}</span></strong></p>
+    </div>
+  {% elif error %}
+    <div class="w3-panel w3-red">
+      <h2>Error!</h2>
+      <p>An unrecoverable error has occured</p>
+      <p>Please email denis.volk@ndm.ox.ac.uk for help</p>
+    </div>
+  {% else %}
+    <div class="w3-panel w3-light-blue">
+      <h2>Ready</h2>
+      <p>The upload client is ready to start uploading the data.</p>
+      <p>Press the button to start</p>
+      <p><a href="/upload/{{submission_name}}?start=1"><button class="w3-btn w3-green">Start</button></a></p>
+    </div>
+  {% endif %}
+
+{% endblock content %}

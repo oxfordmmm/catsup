@@ -7,6 +7,8 @@ channels:
 dependencies:
   - python=3.6
   - kraken2=2.1.1
+  - argh
+  - flask
   - s3cmd
   - nextflow=21.04.0
   - trim-galore=0.6.6

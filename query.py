@@ -3,6 +3,7 @@ import pathlib, logging, sys, json
 from dialog import Dialog
 import argh
 
+
 def change_out_key(submission_path, key, value):
     submission_path = pathlib.Path(submission_path)
     # some basic checks
@@ -28,9 +29,11 @@ def change_out_key(submission_path, key, value):
     with open(submission_path / "upload" / "upload.json", "w") as f:
         f.write(json.dumps(data, indent=4))
 
+
 class Question:
     def __init__(self, qtype, qstr, key):
         self.qtype, self.qstr, self.key = qtype, qstr, key
+
     def execute(self, d, submission_name):
         if self.qtype == "yn":
             if d.yesno(self.qstr) == d.OK:
@@ -38,17 +41,21 @@ class Question:
             else:
                 change_out_key(submission_name, self.key, False)
 
+
 def gui(submission_name):
     d = Dialog(dialog="dialog")
 
-    questions = [Question("yn", "can we use your data for good?", "data-use-good"),
-                 Question("yn", "can we use your data for food?", "data-use-grey"),
-                 Question("yn", "can we use your data for evil?", "data-use-evil")]
+    questions = [
+        Question("yn", "can we use your data for good?", "data-use-good"),
+        Question("yn", "can we use your data for food?", "data-use-grey"),
+        Question("yn", "can we use your data for evil?", "data-use-evil"),
+    ]
 
     for q in questions:
         q.execute(d, submission_name)
 
     d.msgbox("Thanks!")
+
 
 if __name__ == "__main__":
     argh.dispatch_commands([change_out_key, gui])
