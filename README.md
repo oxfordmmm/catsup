@@ -18,9 +18,9 @@ Catsup is the upload client for SP3.
 
 ```curl https://raw.githubusercontent.com/oxfordmmm/catsup/master/install.bash | bash```
 
-## Running
+## using the web UI
 
-We recommend the web UI. This can be run with
+Go to the catsup directory and run
 
 ```bash run.bash```
 
