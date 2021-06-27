@@ -486,7 +486,15 @@ def upload_to_sp3(submission_name_):
     shutil.copy(s, d)
 
     bucket = cfg.get("upload").get("s3").get("bucket")
-    par_url = cfg.get("upload").get("s3").get("par_url")
+
+    try:
+        with open(pathlib.Path(submission_name) / ".par_url") as f:
+            par_url = f.read().strip()
+    except:
+        par_url = None
+
+    if not par_url:
+        par_url = cfg.get("upload").get("s3").get("par_url")
     if not bucket and not par_url:
         logging.error(
             f"You need either an upload.s3.bucket key or an upload.s3.par_url key"
