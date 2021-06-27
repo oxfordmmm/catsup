@@ -4,7 +4,7 @@
   {% if running %}
     <div class="w3-panel w3-pale-yellow">
       <h2>Running...</h2>
-      <p>The upload client is running the pipeline.</p>
+      <p><i class="fa fa-cog fa-spin fa-fw"></i> The upload client is running the pipeline.</p>
       <p>This page will refresh periodically and you will be notified when the process is finished.</p>
     </div>
   {% elif ok %}
@@ -12,7 +12,7 @@
       <h2>Success!</h2>
       <p>The data is now ready for uploading.</p>
       <p>Press the button to go to the upload step.</p>
-      <p><a href="/upload/{{submission_name}}"><button class="w3-btn w3-green">Next step</button></a></p>
+      <p><a href="/upload/{{submission_name}}"><button class="w3-btn w3-blue">Next step <i class="fa fa-arrow-right fa-fw"></i></button></a></p>
     </div>
   {% elif error %}
     <div class="w3-panel w3-red">
@@ -25,7 +25,7 @@
       <h2>Ready</h2>
       <p>The upload client ready to run the pipeline.</p>
       <p>Press the button to start</p>
-      <p><a href="/pipeline/{{submission_name}}?start=1"><button class="w3-btn w3-green">Start</button></a></p>
+      <p><a href="/pipeline/{{submission_name}}?start=1"><button class="w3-btn w3-green"><i class="fa fa-caret-right fa-fw"></i> Start</button></a></p>
     </div>
   {% endif %}
 

@@ -9,27 +9,39 @@
   {% endif %}
 
   <h3>Client Status</h3>
-  <div class="w3-container w3-pale-green">
-    <p>TBD</p>
-  </div>
+  {% if errors %}
+    <div class="w3-container w3-pale-red">
+    <p><strong>Deployment is in unexpected state. Program may not function properly.</strong></p>
+      <ul style="padding-left: 0px; list-style-type:none;">
+        {% for error in errors %}
+          <li><i class="fa fa-exclamation fa-fw"></i>&nbsp;{{ error.get("code")|replace("_", " ")|capitalize }}: {{ error.get("details") }}</li>
+        {% endfor %}
+      </ul>
+      <p>If you changed these settings intentionally then feel free to ignore this.</p>
+    </div>
+  {% else %}
+    <div class="w3-container w3-pale-green">
+      <p><i style="padding: 3px;" class="fa fa-check-square fa-fw"></i> <strong>All checks OK</strong></p>
+    </div>
+  {% endif %}
 
   <h3>New Submission</h3>
   <div class="w3-container w3-pale-green">
     <p>Press to start the submission process.</p>
-  <p><a href="/new_submission"><button class="w3-btn w3-blue">New Submission</button></a></p>
+    <p><a href="/new_submission"><button class="w3-btn w3-blue" style="box-shadow: 5px 5px #000;"><strong>New Submission</strong> <i class="fa fa-arrow-right fa-fw"></i></button></a></p>
   </div>
 
-  <h3>Old Submissions</h3>
+  <h3>Previous Submissions</h3>
   <div class="w3-container w3-pale-green">
     {% if subs %}
-    <p>View details of old submissions.</p>
-    <ul style="padding-left: 0px; list-style-type:none;">
-    {% for sub in subs %}
-      <li><i class="fa fa-file fa-fw"></i>&nbsp;<a style="text-decoration: none" href="/submission_details/{{sub}}">{{ sub }}</a></li>
-    {% endfor %}
-    </ul>
+      <p>View details of previous submissions.</p>
+      <ul style="padding-left: 0px; list-style-type:none;">
+        {% for sub in subs %}
+          <li><i class="fa fa-archive fa-fw"></i>&nbsp;<a style="text-decoration: none" href="/submission_details/{{sub}}">{{ sub }}</a></li>
+        {% endfor %}
+      </ul>
     {% endif %}
   </div>
-<br/>
+  <br/>
 
 {% endblock content %}

@@ -5,6 +5,7 @@ import csv
 import json
 import os
 import pathlib
+import psutil
 import shutil
 import threading
 import time
@@ -61,10 +62,87 @@ def get_nextflow_log(submission_name):
         return None
 
 
+def k(key, d, sep="."):
+    try:
+        for kp in key.split(sep):
+            d = d[kp]
+        return d
+    except:
+        return None
+
+
+def config_error_check():
+    errors = list()
+    try:
+        with open("config.json") as f:
+            conf_data = f.read()
+    except Exception as e:
+        errors.append({"code": "config_json_read_error", "details": str(e)})
+        return errors  # no further error handling possible
+    try:
+        conf = json.loads(conf_data)
+    except Exception as e:
+        errors.append({"code": "config_json_json_error", "details": str(e)})
+        return errors  # no further error handling possible
+
+    for key in [
+        "pipeline",
+        "container",
+        "nextflow_additional_params",
+        "pipelines",
+        "pipelines.catsup-kraken2",
+        "pipelines.catsup-kraken2.script",
+        "pipelines.catsup-kraken2.image",
+        "pipelines.catsup-kraken2.human_ref",
+    ]:
+        if not k(key, conf):
+            errors.append({"code": "config_json_missing_key", "details": key})
+
+    for f in [
+        "pipelines.catsup-kraken2.script",
+        "pipelines.catsup-kraken2.image",
+        "pipelines.catsup-kraken2.human_ref",
+    ]:
+        f = k(f, conf)
+        if f:
+            if not pathlib.Path(f).exists():
+                errors.append({"code": "config_json_missing_file", "details": f})
+
+    for exe in [
+        "nextflow",
+        "curl",
+        "md5sum",
+        "sha1sum",
+        "sha512sum",
+        "s3cmd",
+        "emacs",
+        "kraken2",
+        "trim_galore",
+        "seqtk",
+    ]:
+        if not shutil.which(exe):
+            errors.append({"code": "missing_executable", "details": exe})
+
+    mem_total = psutil.virtual_memory().total // 1000000000
+    mem_req = 16
+    if mem_total < mem_req:
+        errors.append(
+            {
+                "code": "low_memory",
+                "details": f"Less than {mem_req}GB RAM total. Standard preprocessing pipeline won't work well.",
+            }
+        )
+
+    return errors
+
+
 @APP.route("/")
 def index():
     subs = get_submissions()
-    return flask.render_template("index.jinja2", title="SP3 Upload Client", subs=subs)
+    errors = config_error_check()
+    return flask.render_template(
+        "index.jinja2", title="SP3 Upload Client", subs=subs, errors=errors
+    )
 
 
 @APP.route("/submission_details/<submission_name>", methods=["GET", "POST"])

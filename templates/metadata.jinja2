@@ -9,7 +9,7 @@
   {% endif %}
 
   <div class="w3-container w3-white" style="margin-bottom: 10px;">
-    <h2>Instructions</h2>
+    <h2><i class="fa fa-exclamation-circle fa-fw"></i> Instructions</h2>
     <p>Please take care when filling in the form.</p>
     <p>Please normalise the sample name so that all multi-file samples have the same sample name (e.g. remove _1 and _2 from paired sample names)</p>
     <p>To truncate all sample names by a certain number of characters, enter the number of characters above the Apply button and click Apply.</p>
@@ -55,12 +55,14 @@
           <input class="w3-input" type="number" name="truncate_sample_name" value="{{ truncate_sample_name }}"/>
           <label><strong>Press 'Apply' to apply the metadata above to all following samples</strong></label>
           <br/>
-          <button name="apply_metadata" class="w3-input w3-red">Apply</button>
+          <button name="apply_metadata" class="w3-input w3-red"><i class="fa fa-pencil fa-fw"></i> Apply</button>
       {% endif %}
       </div>
       <br/>
     {% endfor %}
-  <input class="w3-input w3-blue" type="submit" name="submit_btn" value="Next step"/>
+    <button class="w3-input w3-blue" type="submit" name="submit_btn" value="Next step"/>
+    Next step <i class="fa fa-arrow-right fa-fw"></i>
+    </button>
   </form>
   <br/>
   <br/>

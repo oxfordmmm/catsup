@@ -8,7 +8,7 @@
     </p>
   </div>
 
-  <p><a href="/"><button class="w3-btn w3-blue">Back to index</button></a></p>
+  <p><a href="/"><button class="w3-btn w3-blue"><i class="fa fa-arrow-left fa-fw"></i> Back to index</button></a></p>
 
   <h3>Submission sample map</h3>
 
@@ -38,11 +38,11 @@
       <div class="w3-container w3-pale-green">
         {% if buttons.get("delete_upload_dir") %}
           <p>Delete the upload directory to save disk space:</p>
-        <p><button name="delete_upload_dir" class="w3-btn w3-red">Delete upload data</button></p>
+        <p><button name="delete_upload_dir" class="w3-btn w3-red"><i class="fa fa-trash fa-fw"></i> Delete upload data</button></p>
       {% endif %}
       {% if buttons.get("delete_submission_dir") %}
         <p>Delete the entire submission directory:</p>
-        <p><button name="delete_submission_dir" class="w3-btn w3-red">Delete submission</button></p>
+        <p><button name="delete_submission_dir" class="w3-btn w3-red"><i class="fa fa-trash fa-fw"></i> Delete submission</button></p>
       {% endif %}
       </div>
     </form>
