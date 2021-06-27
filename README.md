@@ -12,13 +12,14 @@ Catsup is the upload client for SP3.
 
 ## Requirements
 
-- 16G ram or more
+- Minimum 16G ram
+- Minimum 20G disk space in 
 
 ## Installation
 
 ```curl https://raw.githubusercontent.com/oxfordmmm/catsup/master/install.bash | bash```
 
-This will install conda and the application dependencies.
+This will install conda and the application dependencies into your home directory. 
 
 ## using the web UI
 
