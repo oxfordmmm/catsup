@@ -25,11 +25,11 @@ After installation, please close the terminal and open a new one to ensure that 
 
 ## using the web UI
 
-Go to the catsup directory and run
+Go to the ~/catsup directory and run
 
 ```bash run.bash```
 
-in the catsup directory. This will open a web browser to http://127.0.0.1:8080
+This will open a web browser to http://127.0.0.1:8080
 
 ## Alternative configurations
 
