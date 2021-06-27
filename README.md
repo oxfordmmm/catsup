@@ -13,7 +13,7 @@ Catsup is the upload client for SP3.
 ## Requirements
 
 - Minimum 16G ram
-- Minimum 20G disk space in 
+- Minimum 20G disk space on your home directory partition
 
 ## Installation
 
