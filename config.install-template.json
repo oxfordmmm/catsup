@@ -1,0 +1,19 @@
+{
+    "number_of_example_samples": 4,
+    "number_of_files_per_sample": 2,
+    "pipeline": "catsup-kraken2",
+    "container": "conda",
+    "nextflow_additional_params": "-process.executor local",
+    "pipelines": {
+        "catsup-kraken2": {
+            "script": "BASE_DIR/catsup/pipelines/catsup-kraken2/catsup-kraken2.nf",
+            "image": "BASE_DIR/miniconda3/envs/catsup",
+            "human_ref": "BASE_DIR/catsup/minikraken2_v2_8GB_201904_UPDATE"
+        }
+    },
+    "upload": {
+        "s3": {
+            "par_url": null
+        }
+    }
+}

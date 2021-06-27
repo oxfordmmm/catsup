@@ -2,34 +2,50 @@
 {% block content %}
 
   <h3>Submission Name: "{{ submission_name }}"</h3>
-<div class="w3-container w3-pale-green">
-<p>
-  Submission upload identifier: <strong><span class="w3-green" style="font-size: 1.1em; padding: 2px;font-family: monospace;">{{submission_uuid4}}</span></strong>
-</p>
-</div>
-    <p><a href="/"><button class="w3-btn w3-blue">Back to index</button></a></p>
+  <div class="w3-container w3-pale-green">
+    <p>
+      Submission upload identifier: <span class="w3-green" style="font-size: 1.1em; padding: 2px;font-family: monospace;"><strong>{{submission_uuid4}}</strong></span>
+    </p>
+  </div>
 
-<h3>Submission sample map</h2>
+  <p><a href="/"><button class="w3-btn w3-blue">Back to index</button></a></p>
 
-<div class="w3-container w3-pale-green">
-  <p>When the upload client uploads samples to the cloud, the sample files are renamed to unique identifiers to prevent any possible PII leak.</p>
-  <p>The following table is kept only on your disk in the submission directory file sample_uuid_map.csv. It can be used to reassociate the cloud sample IDs with the original sample names.</p>
-  <p>
-  <table class="w3-table w3-bordered w3-border w3-hoverable w3-white">
-    <thead>
-      <th>Cloud name</th>
-      <th>Original sample name</th>
-    </thead>
-    <tbody>
-      {% for s in submission_sample_map %}
-        <tr>
-          <td>{{ s["sample_uuid4"] }}</td>
-          <td>{{ s["sample_name"] }}</td>
-        </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  </p>
-</div>
+  <h3>Submission sample map</h3>
+
+  <div class="w3-container w3-pale-green">
+    <p>When the upload client uploads samples to the cloud, the sample files are renamed to unique identifiers to prevent any possible PII leak.</p>
+    <p>The following table is kept only on your disk in the submission directory file sample_uuid_map.csv. It can be used to reassociate the cloud sample IDs with the original sample names.</p>
+    <p>
+      <table class="w3-table w3-bordered w3-border w3-hoverable w3-white">
+        <thead>
+          <th>Cloud name</th>
+          <th>Original sample name</th>
+        </thead>
+        <tbody>
+          {% for s in submission_sample_map %}
+            <tr>
+              <td>{{ s["sample_uuid4"] }}</td>
+              <td>{{ s["sample_name"] }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </p>
+  </div>
+  {% if buttons %}
+    <form method="POST">
+      <h3>Operations</h3>
+      <div class="w3-container w3-pale-green">
+        {% if buttons.get("delete_upload_dir") %}
+          <p>Delete the upload directory to save disk space:</p>
+        <p><button name="delete_upload_dir" class="w3-btn w3-red">Delete upload data</button></p>
+      {% endif %}
+      {% if buttons.get("delete_submission_dir") %}
+        <p>Delete the entire submission directory:</p>
+        <p><button name="delete_submission_dir" class="w3-btn w3-red">Delete submission</button></p>
+      {% endif %}
+      </div>
+    </form>
+  {% endif %}
 
 {% endblock content %}

@@ -445,6 +445,12 @@ def run_pipeline(submission_name_):
         )
         sys.exit(1)
 
+    try:
+        nf_clean_cmd = "nextflow clean -f -k"
+        p = subprocess.check_output(shlex.split(nf_clean_cmd), cwd=str(new_dir))
+    except Exception as e:
+        print(e)
+
     api_success()
     step_msg(3, "end")
 

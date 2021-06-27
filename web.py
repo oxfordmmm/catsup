@@ -5,7 +5,9 @@ import csv
 import json
 import os
 import pathlib
+import shutil
 import threading
+import time
 
 import argh
 import flask
@@ -65,7 +67,7 @@ def index():
     return flask.render_template("index.jinja2", title="SP3 Upload Client", subs=subs)
 
 
-@APP.route("/submission_details/<submission_name>")
+@APP.route("/submission_details/<submission_name>", methods=["GET", "POST"])
 def submission_details(submission_name):
     submission_uuid4 = get_submission_uuid4(submission_name)
     submission_files = get_submission_files(submission_name)
@@ -78,6 +80,29 @@ def submission_details(submission_name):
             memo.append(s["sample_name"])
             submission_sample_map.append(s)
 
+    buttons = dict()
+    if pathlib.Path(submission_name).is_dir():
+        buttons["delete_submission_dir"] = True
+    if (pathlib.Path(submission_name) / "upload").is_dir():
+        buttons["delete_upload_dir"] = True
+
+    if flask.request.method == "POST":
+        if "delete_submission_dir" in flask.request.form:
+
+            def delete_submission_dir():
+                shutil.rmtree(pathlib.Path(submission_name))
+
+            threading.Thread(target=delete_submission_dir).start()
+            time.sleep(2)  # optimism
+            return flask.redirect("/")
+        if "delete_upload_dir" in flask.request.form:
+
+            def delete_upload_dir():
+                shutil.rmtree(pathlib.Path(submission_name) / "upload")
+
+            threading.Thread(target=delete_work_dir).start()
+            buttons["delete_upload_dir"] = False
+
     return flask.render_template(
         "submission_details.jinja2",
         title="Submission Details",
@@ -86,6 +111,7 @@ def submission_details(submission_name):
         submission_files=submission_files,
         submission_sample_map=submission_sample_map,
         nf_log=nf_log,
+        buttons=buttons,
     )
 
 
