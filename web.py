@@ -116,7 +116,6 @@ def config_error_check():
         "sha1sum",
         "sha512sum",
         "s3cmd",
-        "emacs",
         "kraken2",
         "trim_galore",
         "seqtk",
