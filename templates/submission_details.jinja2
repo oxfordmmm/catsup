@@ -1,0 +1,35 @@
+{% extends 'base.jinja2' %}
+{% block content %}
+
+  <h3>Submission Name: "{{ submission_name }}"</h3>
+<div class="w3-container w3-pale-green">
+<p>
+  Submission upload identifier: <strong><span class="w3-green" style="font-size: 1.1em; padding: 2px;font-family: monospace;">{{submission_uuid4}}</span></strong>
+</p>
+</div>
+    <p><a href="/"><button class="w3-btn w3-blue">Back to index</button></a></p>
+
+<h3>Submission sample map</h2>
+
+<div class="w3-container w3-pale-green">
+  <p>When the upload client uploads samples to the cloud, the sample files are renamed to unique identifiers to prevent any possible PII leak.</p>
+  <p>The following table is kept only on your disk in the submission directory file sample_uuid_map.csv. It can be used to reassociate the cloud sample IDs with the original sample names.</p>
+  <p>
+  <table class="w3-table w3-bordered w3-border w3-hoverable w3-white">
+    <thead>
+      <th>Cloud name</th>
+      <th>Original sample name</th>
+    </thead>
+    <tbody>
+      {% for s in submission_sample_map %}
+        <tr>
+          <td>{{ s["sample_uuid4"] }}</td>
+          <td>{{ s["sample_name"] }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </p>
+</div>
+
+{% endblock content %}

@@ -1,9 +1,20 @@
 #! /usr/bin/env python3
 
-import csv, logging, pathlib, sys, uuid, copy, os, collections, shutil, subprocess, shlex, json, shutil
+import collections
+import copy
+import csv
+import json
+import logging
+import os
+import pathlib
+import shlex
+import shutil
+import subprocess
+import sys
+import uuid
 
-import validate
 import par_upload
+import validate
 
 cfg = None
 

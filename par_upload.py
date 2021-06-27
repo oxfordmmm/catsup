@@ -1,6 +1,7 @@
+import csv
 import os
 import pathlib
-import csv
+
 import argh
 
 

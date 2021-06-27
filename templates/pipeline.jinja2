@@ -1,19 +1,17 @@
 {% extends 'base.jinja2' %}
 {% block content %}
 
-  <h1>Step 3: Run preprocessing pipeline</h1>
-
   {% if running %}
-    <div class="w3-panel w3-pale-red">
+    <div class="w3-panel w3-pale-yellow">
       <h2>Running...</h2>
       <p>The upload client is running the pipeline.</p>
       <p>This page will refresh periodically and you will be notified when the process is finished.</p>
     </div>
   {% elif ok %}
-    <div class="w3-panel w3-light-blue">
+    <div class="w3-panel w3-pale-green">
       <h2>Success!</h2>
       <p>The data is now ready for uploading.</p>
-      <p>Press the button to start the upload.</p>
+      <p>Press the button to go to the upload step.</p>
       <p><a href="/upload/{{submission_name}}"><button class="w3-btn w3-green">Next step</button></a></p>
     </div>
   {% elif error %}
@@ -23,7 +21,7 @@
       <p>Please email denis.volk@ndm.ox.ac.uk for help</p>
     </div>
   {% else %}
-    <div class="w3-panel w3-light-blue">
+    <div class="w3-panel w3-pale-green">
       <h2>Ready</h2>
       <p>The upload client ready to run the pipeline.</p>
       <p>Press the button to start</p>
@@ -31,4 +29,14 @@
     </div>
   {% endif %}
 
+  {% if (running or ok or error) and nf_log %}
+    <h2>Pipeline log</h2>
+    <textarea id="nf_log" class="w3-input" readonly rows=20>{{ nf_log }}</textarea>
+    {% endif %}
+
 {% endblock content %}
+
+{% block script %}
+  var textarea = document.getElementById('nf_log');
+  textarea.scrollTop = textarea.scrollHeight;
+{% endblock script %}

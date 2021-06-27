@@ -1,32 +1,30 @@
 {% extends 'base.jinja2' %}
 {% block content %}
 
-  <h1>Step 2: Prepare data for pipeline</h1>
-
   {% if running %}
-    <div class="w3-panel w3-pale-red">
+    <div class="w3-panel w3-pale-yellow">
       <h2>Running...</h2>
       <p>The upload client is processing data.</p>
       <p>This page will refresh periodically and you will be notified when the process is finished.</p>
     </div>
   {% elif ok %}
-    <div class="w3-panel w3-light-blue">
+    <div class="w3-panel w3-pale-green">
       <h2>Success!</h2>
-      <p>The data is now ready to run through the preprocessing pipeline</p>
-      <p>Press the button to start the pipeline</p>
-      <p><a href="/pipeline/{{submission_name}}"><button class="w3-btn w3-green">Next step</button></a></p>
+      <p>The data is now ready to run through the preprocessing pipeline.</p>
+      <p>Press the button to go to the next step.</p>
+      <p><a href="/pipeline/{{submission_name}}"><button class="w3-btn w3-blue">Next step</button></a></p>
     </div>
   {% elif error %}
     <div class="w3-panel w3-red">
       <h2>Error!</h2>
-      <p>An unrecoverable error has occured</p>
-      <p>Please email denis.volk@ndm.ox.ac.uk for help</p>
+      <p>An unrecoverable error has occured.</p>
+      <p>Please email denis.volk@ndm.ox.ac.uk for help.</p>
     </div>
   {% else %}
-    <div class="w3-panel w3-light-blue">
+    <div class="w3-panel w3-pale-green">
       <h2>Ready</h2>
       <p>The upload client ready to start processing data.</p>
-      <p>Press the button to start</p>
+      <p>Press the button to start.</p>
       <p><a href="/stage/{{submission_name}}?start=1"><button class="w3-btn w3-green">Start</button></a></p>
     </div>
   {% endif %}

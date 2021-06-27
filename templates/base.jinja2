@@ -16,19 +16,20 @@
 
   <body class="w3-light-gray">
 
-    <div class="w3-bar w3-top w3-black w3-large">
-      <span class="w3-bar-item w3-right">Oxford Scalable Pipeline Platform (SP3) Upload Client</span>
-    </div>
+    <header class="w3-container w3-black w3-bar"><span class="w3-bar-item w3-large w3-right">Oxford Scalable Pipeline Platform (SP3) Upload Client</span></header>
 
+    <header class="w3-container w3-green"><h1>{{ title }}</h1></header>
 
-    <div class="w3-container" style="margin-top: 43px;">
+    <div class="w3-container" style="margin-top: 5px;">
 
       {% block content %}
       {% endblock content %}
 
     </div>
 
+  <script>
+  {% block script %}
+  {% endblock script %}
+  </script>
   </body>
 </html>
-
-

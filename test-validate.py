@@ -5,10 +5,11 @@
 # View code coverage report: coverage report -m
 # Generate code coverage html report: coverage html
 
-import unittest
-import validate
 import json
 import os
+import unittest
+
+import validate
 
 
 class TestValidate(unittest.TestCase):

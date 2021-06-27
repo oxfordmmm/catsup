@@ -1,0 +1,33 @@
+{% extends "base.jinja2" %}
+{% block content %}
+
+  {% if error_msg %}
+    <div class="w3-panel w3-red">
+      <h3>Error:</h3>
+      <p>{{ error_msg }}</p>
+    </div>
+  {% endif %}
+
+  <p>To begin please fill in the new submission form:</p>
+  <div class="w3-container w3-pale-green" style="padding-bottom: 10px;">
+    <form method="POST">
+
+      <label><h3>Submission name</h3></label>
+      <label>Enter the name your submission. It should contain only letters and numbers and should be unique.</label>
+      <input class="w3-input" type="text" name="submission_name"></input>
+
+      <label><h3>Pipeline input file path</h3></label>
+      <label>Enter the absolute path to the pipeline input files (e.g. /home/username/myfiles/ or c:/users/username/myfiles/).</label>
+      <input class="w3-input" type="text" name="submission_dir"></input>
+
+      <label><h3>PAR URL</h3></label>
+      <label>Enter your PAR URL. If you don't have one you will have to contact a SP3 administrator to obtain it.</label>
+      <input class="w3-input" type="text" name="submission_par_url"></input>
+
+  </div>
+  <br/>
+  <button class="w3-input w3-btn w3-blue">Next step</button>
+  </form>
+
+
+{% endblock content %}

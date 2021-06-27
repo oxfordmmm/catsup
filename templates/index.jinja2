@@ -1,8 +1,6 @@
 {% extends "base.jinja2" %}
 {% block content %}
 
-  <h1>Step 1: New SP3 Submission</h1>
-
   {% if error_msg %}
     <div class="w3-panel w3-red">
       <h3>Error:</h3>
@@ -10,19 +8,29 @@
     </div>
   {% endif %}
 
-  <p>To begin please fill in the new submission form</p>
-  <div class="w3-container">
-    <form method="POST">
-      <label><h3>Submission name</h3></label>
-      <label>Please name your submission. It should contain only letters and numbers and should be unique.</label>
-      <input class="w3-input" type="text" name="submission_name"></input>
-      <label><h3>Pipeline input file path</h3></label>
-      <label>Please enter the absolute path to the pipeline input files (e.g. /home/username/myfiles/ or c:/users/username/myfiles/)</label>
-      <input class="w3-input" type="text" name="submission_dir"></input>
+  <h3>Client Status</h3>
+  <div class="w3-container w3-pale-green">
+    <p>All OK</p>
   </div>
-  <br/>
-  <button class="w3-button w3-blue">Submit</button>
-  </form>
 
+
+  <h3>New Submission</h3>
+  <div class="w3-container w3-pale-green">
+    <p>Press to start the submission process.</p>
+  <p><a href="/new_submission"><button class="w3-btn w3-blue">Start</button></a></p>
+  </div>
+
+  <h3>Old Submissions</h3>
+  <div class="w3-container w3-pale-blue">
+    {% if subs %}
+    <p>View details of old submissions.</p>
+    <ul style="padding-left: 0px; list-style-type:none;">
+    {% for sub in subs %}
+      <li><i class="fa fa-file fa-fw"></i>&nbsp;<a style="text-decoration: none" href="/submission_details/{{sub}}">{{ sub }}</a></li>
+    {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+<br/>
 
 {% endblock content %}

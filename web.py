@@ -2,9 +2,10 @@
 
 import collections
 import csv
-import threading
 import json
+import os
 import pathlib
+import threading
 
 import argh
 import flask
@@ -19,18 +20,94 @@ def read_input_csv(submission_name):
         return list(csv.DictReader(f))
 
 
-@APP.route("/", methods=["GET", "POST"])
-def page1():
-    debug_text = flask.request.form
-    error_msg = None
-    if debug_text:
-        debug_text = json.dumps(debug_text, indent=4)
+def get_submission_uuid4(submission_name):
+    try:
+        with open(pathlib.Path(submission_name) / "upload" / "sp3data.csv") as f:
+            return list(csv.DictReader(f))[0]["submission_uuid4"]
+    except Exception as e:
+        print(str(e))
 
+
+def get_submissions():
+    ps = pathlib.Path(".").glob("*/inputs.csv")
+    files = sorted(list(ps), key=os.path.getmtime, reverse=True)
+    return [x.parent.name for x in files]
+
+
+def get_submission_files(submission_name):
+    files = (pathlib.Path(submission_name) / "pipeline_in").glob("*")
+    files = sorted([x.name for x in files])
+    return files
+
+
+def get_submission_sample_map(submission_name):
+    try:
+        with open(pathlib.Path(submission_name) / "sample_uuid_map.csv") as f:
+            return sorted(list(csv.DictReader(f)), key=lambda x: x["sample_uuid4"])
+    except Exception as e:
+        print(str(e))
+        return list()
+
+
+def get_nextflow_log(submission_name):
+    try:
+        with open(
+            pathlib.Path(submission_name) / "pipeline_run" / ".nextflow.log"
+        ) as f:
+            return f.read()
+    except:
+        return None
+
+
+@APP.route("/")
+def index():
+    subs = get_submissions()
+    return flask.render_template("index.jinja2", title="SP3 Upload Client", subs=subs)
+
+
+@APP.route("/submission_details/<submission_name>")
+def submission_details(submission_name):
+    submission_uuid4 = get_submission_uuid4(submission_name)
+    submission_files = get_submission_files(submission_name)
+    submission_sample_map_ = get_submission_sample_map(submission_name)
+    submission_sample_map = list()
+    nf_log = get_nextflow_log(submission_name)
+    memo = list()
+    for s in submission_sample_map_:
+        if s["sample_name"] not in memo:
+            memo.append(s["sample_name"])
+            submission_sample_map.append(s)
+
+    return flask.render_template(
+        "submission_details.jinja2",
+        title="Submission Details",
+        submission_name=submission_name,
+        submission_uuid4=submission_uuid4,
+        submission_files=submission_files,
+        submission_sample_map=submission_sample_map,
+        nf_log=nf_log,
+    )
+
+
+@APP.route("/new_submission", methods=["GET", "POST"])
+def page1():
+    title = "Start New Submission"
+
+    def save_par_url(submission_name, par_url):
+        try:
+            with open(pathlib.Path(submission_name) / ".par_url", "w") as f:
+                f.write(par_url)
+        except Exception as e:
+            return str(e)
+
+    error_msg = None
     if flask.request.method == "POST":
         submission_name = flask.request.form.get("submission_name")
         submission_dir = flask.request.form.get("submission_dir")
+        submission_par_url = flask.request.form.get("submission_par_url")
 
         r = catsup.create_template(submission_name, [submission_dir], api=True)
+        r2 = save_par_url(submission_name, submission_par_url)
 
         if r["status"] == "error":
             error_msgs = {
@@ -40,14 +117,20 @@ def page1():
             error_msg = error_msgs.get(r.get("reason"), "Unknown error")
 
             return flask.render_template(
-                "index.jinja2", debug_text=debug_text, error_msg=error_msg
+                "index.jinja2", title=title, error_msg=error_msg
+            )
+
+        if r2:
+            error_msg = "Couldn't save par_url"
+            return flask.render_template(
+                "index.jinja2", title=title, error_msg=error_msg
             )
 
         if r["status"] == "success":
             return flask.redirect(f"/metadata/{submission_name}")
 
     return flask.render_template(
-        "index.jinja2", debug_text=debug_text, error_msg=error_msg
+        "new_submission.jinja2", title=title, error_msg=error_msg
     )
 
 
@@ -55,12 +138,10 @@ def page1():
 def page2(submission_name):
     csvdata = read_input_csv(submission_name)
 
-    debug_text = ""
     overrides = dict()
     truncate_sample_name = 0
 
     if flask.request.method == "POST":
-        debug_text = flask.request.form
         overrides = flask.request.form
         truncate_sample_name = flask.request.form.get("truncate_sample_name", 0)
 
@@ -106,9 +187,9 @@ def page2(submission_name):
 
     return flask.render_template(
         "metadata.jinja2",
+        title="Step 1: Edit Submission Metadata",
         submission_name=submission_name,
         csv=csvdata,
-        debug_text=debug_text,
         overrides=overrides,
         truncate_sample_name=truncate_sample_name,
     )
@@ -116,6 +197,7 @@ def page2(submission_name):
 
 @APP.route("/stage/<submission_name>", methods=["GET", "POST"])
 def page3(submission_name):
+    title = "Step 2: Prepare data for pipeline"
     running = False
     ok = False
     error = False
@@ -138,6 +220,7 @@ def page3(submission_name):
 
     return flask.render_template(
         "stage.jinja2",
+        title=title,
         submission_name=submission_name,
         running=running,
         ok=ok,
@@ -146,16 +229,57 @@ def page3(submission_name):
     )
 
 
-@APP.route("/upload/<submission_name>", methods=["GET", "POST"])
-def page5(submission_name):
+@APP.route("/pipeline/<submission_name>", methods=["GET", "POST"])
+def page4(submission_name):
+    title = "Step 3: Run preprocessing pipeline"
     running = False
     ok = False
     error = False
     refresh = False
     start = False
+    nf_log = None
+    if (pathlib.Path(submission_name) / ".step3-running").exists():
+        running = True
+    if (pathlib.Path(submission_name) / ".step3-ok").exists():
+        ok = True
+    if (pathlib.Path(submission_name) / ".step3-error").exists():
+        error = True
+    if flask.request.args.get("refresh") and not (ok or error):
+        refresh = True
+    if flask.request.args.get("start"):
+        start = True
+    if running or ok or error:
+        nf_log = get_nextflow_log(submission_name)
+
+    if start:
+        threading.Thread(target=catsup.run_pipeline, args=(submission_name,)).start()
+        return flask.redirect(f"/pipeline/{submission_name}?refresh=1")
+
+    return flask.render_template(
+        "pipeline.jinja2",
+        title=title,
+        submission_name=submission_name,
+        running=running,
+        ok=ok,
+        error=error,
+        refresh=refresh,
+        nf_log=nf_log,
+    )
+
+
+@APP.route("/upload/<submission_name>", methods=["GET", "POST"])
+def page5(submission_name):
+    title = "Step 4: Upload to cloud storage"
+    running = False
+    ok = False
+    error = False
+    refresh = False
+    start = False
+    submission_uuid4 = None
     if (pathlib.Path(submission_name) / ".step4-running").exists():
         running = True
     if (pathlib.Path(submission_name) / ".step4-ok").exists():
+        submission_uuid4 = get_submission_uuid4(submission_name)
         ok = True
     if (pathlib.Path(submission_name) / ".step4-error").exists():
         error = True
@@ -170,41 +294,10 @@ def page5(submission_name):
 
     return flask.render_template(
         "upload.jinja2",
+        title=title,
         submission_name=submission_name,
         running=running,
-        fetch_uuid="cf5dcb73-f517-47ac-aed7-42d72aab976f",
-        ok=ok,
-        error=error,
-        refresh=refresh,
-    )
-
-
-@APP.route("/pipeline/<submission_name>", methods=["GET", "POST"])
-def page4(submission_name):
-    running = False
-    ok = False
-    error = False
-    refresh = False
-    start = False
-    if (pathlib.Path(submission_name) / ".step3-running").exists():
-        running = True
-    if (pathlib.Path(submission_name) / ".step3-ok").exists():
-        ok = True
-    if (pathlib.Path(submission_name) / ".step3-error").exists():
-        error = True
-    if flask.request.args.get("refresh") and not (ok or error):
-        refresh = True
-    if flask.request.args.get("start"):
-        start = True
-
-    if start:
-        threading.Thread(target=catsup.run_pipeline, args=(submission_name,)).start()
-        return flask.redirect(f"/pipeline/{submission_name}?refresh=1")
-
-    return flask.render_template(
-        "pipeline.jinja2",
-        submission_name=submission_name,
-        running=running,
+        submission_uuid4=submission_uuid4,
         ok=ok,
         error=error,
         refresh=refresh,

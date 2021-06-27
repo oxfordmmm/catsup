@@ -1,7 +1,10 @@
-import pathlib, logging, sys, json
+import json
+import logging
+import pathlib
+import sys
 
-from dialog import Dialog
 import argh
+from dialog import Dialog
 
 
 def change_out_key(submission_path, key, value):

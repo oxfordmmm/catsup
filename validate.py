@@ -1,6 +1,9 @@
 #! /usr/bin/env python3
 
-import csv, logging, pathlib, json
+import csv
+import json
+import logging
+import pathlib
 import re
 
 in_fieldnames_date_fields = ["sample_collection_date"]
