@@ -7,7 +7,7 @@
     "pipelines": {
         "catsup-kraken2": {
             "script": "BASE_DIR/catsup/pipelines/catsup-kraken2/catsup-kraken2.nf",
-            "image": "BASE_DIR/miniconda3/envs/catsup",
+            "image": "BASE_DIR/miniconda/envs/catsup",
             "human_ref": "BASE_DIR/catsup/minikraken2_v2_8GB_201904_UPDATE"
         }
     },
