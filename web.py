@@ -9,6 +9,7 @@ import psutil
 import shutil
 import threading
 import time
+import webbrowser
 
 import argh
 import flask
@@ -409,7 +410,11 @@ def page5(submission_name):
 
 
 def main():
-    APP.run(host="0.0.0.0", port=8080, debug=True)
+    if os.environ.get("FLASK_DEBUG"):
+        APP.run(host="0.0.0.0", port=8080, debug=True)
+    else:
+        APP.run(host="0.0.0.0", port=8080)
+        webbrowser.open_new("http://127.0.0.1:8080")
 
 
 if __name__ == "__main__":
