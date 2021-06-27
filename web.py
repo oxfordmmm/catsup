@@ -412,9 +412,11 @@ def main():
     if os.environ.get("FLASK_DEBUG"):
         APP.run(host="0.0.0.0", port=8080, debug=True)
     else:
+
         def browser_open():
-            time.sleep(5) # optimism
+            time.sleep(5)  # optimism
             webbrowser.open_new("http://127.0.0.1:8080")
+
         threading.Thread(target=browser_open).start()
         APP.run(host="0.0.0.0", port=8080)
 
