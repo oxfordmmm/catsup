@@ -19,7 +19,9 @@ Catsup is the upload client for SP3.
 
 ```curl https://raw.githubusercontent.com/oxfordmmm/catsup/master/install.bash | bash```
 
-This will install conda and the application dependencies into your home directory. 
+This will install conda and the application dependencies into your home directory.
+
+After installation, please close the terminal and open a new one to ensure that conda is initialized.
 
 ## using the web UI
 
