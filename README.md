@@ -1,5 +1,7 @@
 # Catsup
 
+<img src="https://img.shields.io/badge/build-passing-brightgreen">
+
 Catsup is the upload client for SP3.
 
 <img src="https://i.imgur.com/6m0unoK.png" width=250> <img src="https://i.imgur.com/T7jLKkN.png" width=250> <img src="https://i.imgur.com/3EGU1bk.png" width=250> <img src="https://i.imgur.com/UYZodNw.png" width=250> <img src="https://i.imgur.com/JCrFAg8.png" width=250>
