@@ -2,6 +2,8 @@
 
 Catsup is the upload client for SP3.
 
+<img src="https://i.imgur.com/6m0unoK.png" width=200> <img src="https://i.imgur.com/T7jLKkN.png" width=200> <img src="https://i.imgur.com/3EGU1bk.png" width=200> <img src="https://i.imgur.com/UYZodNw.png" width=200> <img src="https://i.imgur.com/JCrFAg8.png" width=200>
+
 ## Supported operating systems
 
 - Linux
