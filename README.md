@@ -33,4 +33,4 @@ This will open a web browser to http://127.0.0.1:8080
 
 ## Alternative configurations
 
-catsup can be run as a command-line program to support automated deployments. Please see README.md.old for more information on how to set it up.
+catsup can be run as a command-line program to support automated deployments. Please see README.md.old for generic information and user_guide.md for specific setup instructions.
