@@ -13,22 +13,22 @@ Catsup is a python application that allows users to pre-process pathogen sequenc
 Catsup performs the following steps:
 
 Prepares the Template
-    1. Generates a template for data submission (input.csv)
-    2. Validates the template after user input
+- Generates a template for data submission (input.csv)
+- Validates the template after user input
 
 Anonymises Sample Identifiers
-    3. Creates unique identifier (UUID) for submission
-    4. Creates unique identifier (UUID) for every sample
-    5. Generates md5sum for each sample file
-    6. Updates the template with submission UUID, sample guid and md5sum (sp3data.csv)
-    7. Rename/symlink sample files with sample UUID
-    8. Generates a lookup table of sample name and sample guid (sample_uuid_map.csv)
+- Creates unique identifier (UUID) for submission
+- Creates unique identifier (UUID) for every sample
+- Generates md5sum for each sample file
+- Updates the template with submission UUID, sample guid and md5sum (sp3data.csv)
+- Rename/symlink sample files with sample UUID
+- Generates a lookup table of sample name and sample guid (sample_uuid_map.csv)
 
 Removes Human Reads
-    9. Run quality control pipeline (trimming and remove human reads)
+- Run quality control pipeline (trimming and remove human reads)
 
 Upload to GPAS
-    10. Upload cleaned (no human reads) sample files to GPAS
+- Upload cleaned (no human reads) sample files to GPAS
 
 ## REQUIREMENTS
 
@@ -95,6 +95,7 @@ Then type:
     $ git clone https://github.com/oxfordmmm/catsup
 
 If you now type:
+
     $ ls
 
 You should see a catsup directory.
@@ -116,6 +117,7 @@ This will activate the catsup environment. (base) before your prompt will change
 ### Install argh
 
 Type
+
     $ pip3 install argh
 
 To install a small dependency which Catsup uses.
@@ -172,7 +174,7 @@ The first time we run it is to generate the inputs.csv file that will match the 
 
 To run Catsup the first time type:
 
-$ python3 catsup submission /home/username/fastqfolder
+    $ python3 catsup submission /home/username/fastqfolder
 
 Where submission is the name of the folder you want Catsup to create your inputs.csv file in and /home/username/fastqfolder is the directory your sequencing data is in.
 
@@ -192,11 +194,23 @@ If your files are testsample_1.fastq.gz and testsample_2.fastq.gz then “sample
 
 For paired end sequencing with 2 files per sample the inputs.csv is formatted as below:
 
+| index | subindex | sample_name | sample_filename | sample_file_extension |
+|---|---|---|---|---|
+| 1 | 1 | testfastq1 | /home/username/testuploads/testupload1/testqupload1_1.fastq.gz | fastq.gz |
+| 1 | 2 | testfastq1 | /home/username/testuploads/testupload1/testqupload1_2.fastq.gz | fastq.gz |
+| 2 | 1 | testfastq2 | /home/username/testuploads/testupload1/testqupload2_1.fastq.gz | fastq.gz |
+| 2 | 2 | testfastq2 | /home/username/testuploads/testupload1/testqupload2_2.fastq.gz | fastq.gz |
+| 3 | 1 | testfastq3 | /home/username/testuploads/testupload1/testqupload3_1.fastq.gz | fastq.gz |
+| 3 | 2 | testfastq3 | /home/username/testuploads/testupload1/testqupload3_2.fastq.gz | fastq.gz |
+| 4 | 1 | testfastq4 | /home/username/testuploads/testupload1/testqupload4_1.fastq.gz | fastq.gz |
+| 4 | 2 | testfastq4 | /home/username/testuploads/testupload1/testqupload4_2.fastq.gz | fastq.gz |
+
 Ensure rest of the metadata columns are updated and accurate.
 
 ### Running Catsup
 
 Type:
+
     $ python3 catsup.py submission
 
 This will run Catsup through the pre-processing steps. You should see something like:
