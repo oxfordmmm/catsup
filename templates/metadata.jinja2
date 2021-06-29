@@ -1,10 +1,15 @@
 {% extends "base.jinja2" %}
 {% block content %}
 
-  {% if error_msg %}
+  {% if errors %}
     <div class="w3-panel w3-red">
       <h3>Error:</h3>
-      <p>{{ error_msg }}</p>
+      {% for error in errors[0:2] %}
+        <p>{{ error }}</p>
+      {% endfor %}
+      {% if errors|length > 2 %}
+        <p>Further {{ errors|length - 2 }} error(s) suppressed.</p>
+      {% endif %}
     </div>
   {% endif %}
 

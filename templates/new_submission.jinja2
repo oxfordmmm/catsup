@@ -16,9 +16,16 @@
       <label>Enter the name your submission. It should contain only letters and numbers and should be unique. This name is not transmitted into the cloud.</label>
       <input class="w3-input" type="text" name="submission_name"></input>
 
-      <label><h3>Pipeline input file path</h3></label>
+      <label><h3>Sample input file path</h3></label>
       <label>Enter the absolute path to the pipeline input files (e.g. /home/username/myfastqfiles/).</label>
       <input class="w3-input" type="text" name="submission_dir"></input>
+
+      <label><h3>Number of files per sample</h3></label>
+      <label>Select the number of files per sample (i.e. 2 for pair-ended reads, 1 for single-ended reads.)</label>
+      <select class="w3-input" name="submission_files_per_sample">
+        <option value="1">1</option>
+        <option value="2" selected="selected">2</option>
+      </select>
 
       <label><h3>PAR URL</h3></label>
       <label>Enter your PAR URL. If you don't have one you will have to contact a SP3 administrator to obtain it.</label>

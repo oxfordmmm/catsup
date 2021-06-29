@@ -44,8 +44,7 @@ read_cfg("config.json", "config.json-example")
 in_csv_name = "inputs.csv"
 out_csv_name = "sp3data.csv"
 sample_guid_map_name = "sample_guid_map.csv"
-submission_name = None
-number_of_files_per_sample = int(cfg.get("number_of_files_per_sample"))
+
 in_fieldnames = [
     "index",
     "subindex",
@@ -65,7 +64,7 @@ in_fieldnames = [
 ]
 
 
-def make_example_entries(n, files):
+def make_example_entries(n, files, number_of_files_per_sample):
     ret = list()
     k = 0
     for i in range(1, n + 1):
@@ -154,7 +153,7 @@ def step_msg(step, state, **kwargs):
             print(f"\n*** Next step: {steps[step+1]}\n")
 
 
-def create_template(submission_name, args, api=False):
+def create_template(submission_name, args, number_of_files_per_sample, api=False):
     step_msg(1, "begin")
     pathlib.Path(submission_name).mkdir(exist_ok=True)
     input_csv = pathlib.Path(submission_name) / in_csv_name
@@ -173,7 +172,9 @@ def create_template(submission_name, args, api=False):
                 writer = csv.DictWriter(csvfile, fieldnames=in_fieldnames)
                 writer.writeheader()
                 for row in make_example_entries(
-                    len(files) // number_of_files_per_sample, files
+                    len(files) // number_of_files_per_sample,
+                    files,
+                    number_of_files_per_sample,
                 ):
                     writer.writerow(row)
         else:
@@ -184,7 +185,9 @@ def create_template(submission_name, args, api=False):
             writer = csv.DictWriter(csvfile, fieldnames=in_fieldnames)
             writer.writeheader()
             number_of_example_samples = cfg.get("number_of_example_samples", 4)
-            for row in make_example_entries(number_of_example_samples, None):
+            for row in make_example_entries(
+                number_of_example_samples, None, number_of_example_samples
+            ):
                 writer.writerow(row)
 
     print(f"Created {input_csv}")
@@ -227,7 +230,7 @@ def new_sample_filename(
     return guid + "_" + str(index) + "." + sample_file_extension
 
 
-def rename_sample(sample_filename, renamed_filename):
+def rename_sample(sample_filename, renamed_filename, submission_name):
     i = pathlib.Path(sample_filename).absolute()
     (pathlib.Path(submission_name) / "pipeline_in").mkdir(exist_ok=True)
     o = pathlib.Path(submission_name) / "pipeline_in" / renamed_filename
@@ -235,10 +238,7 @@ def rename_sample(sample_filename, renamed_filename):
     os.symlink(i, o)
 
 
-def prepare_data(submission_name_):
-    global submission_name
-    submission_name = submission_name_
-
+def prepare_data(submission_name):
     def api_begin():
         (pathlib.Path(submission_name) / ".step2-running").touch(exist_ok=True)
         unlink_missing_ok(pathlib.Path(submission_name) / ".step2-ok")
@@ -319,7 +319,7 @@ def prepare_data(submission_name_):
                 guid_index,
             )
 
-            rename_sample(out["sample_filename"], renamed_filename)
+            rename_sample(out["sample_filename"], renamed_filename, submission_name)
 
             writer2.writerow(
                 {
@@ -362,7 +362,7 @@ def make_clean_filename(sample_uuid4, subindex, sample_file_extension):
     return f"{sample_uuid4}_C{subindex}.{sample_file_extension}"
 
 
-def hash_clean_files():
+def hash_clean_files(submission_name):
     submission_uuid4 = None
     for writer, row in process_csv(f"{submission_name}/sp3data.csv"):
         submission_uuid4 = row["submission_uuid4"]
@@ -387,10 +387,7 @@ def unlink_missing_ok(p):
         pass
 
 
-def run_pipeline(submission_name_):
-    global submission_name
-    submission_name = submission_name_
-
+def run_pipeline(submission_name, number_of_files_per_sample):
     def api_begin():
         (pathlib.Path(submission_name) / ".step3-running").touch(exist_ok=True)
         unlink_missing_ok(pathlib.Path(submission_name) / ".step3-ok")
@@ -455,10 +452,7 @@ def run_pipeline(submission_name_):
     step_msg(3, "end")
 
 
-def upload_to_sp3(submission_name_):
-    global submission_name
-    submission_name = submission_name_
-
+def upload_to_sp3(submission_name):
     def api_begin():
         (pathlib.Path(submission_name) / ".step4-running").touch(exist_ok=True)
         unlink_missing_ok(pathlib.Path(submission_name) / ".step4-ok")
@@ -479,7 +473,7 @@ def upload_to_sp3(submission_name_):
     step_msg(4, "begin")
     print("Uploading to S3")
 
-    submission_uuid4 = hash_clean_files()
+    submission_uuid4 = hash_clean_files(submission_name)
 
     s = pathlib.Path(f"{submission_name}/sp3data.csv")
     d = pathlib.Path(f"{submission_name}/upload/sp3data.csv")
@@ -531,11 +525,10 @@ def main():
     if len(sys.argv) <= 1:
         print("Please pass a submission name as a first argument")
         sys.exit(1)
-    else:
-        global submission_name
-        submission_name = sys.argv[1]
-        pathlib.Path(submission_name).mkdir(exist_ok=True)
+    submission_name = sys.argv[1]
+    pathlib.Path(submission_name).mkdir(exist_ok=True)
 
+    number_of_files_per_sample = int(cfg.get("number_of_files_per_sample"))
     input_csv = pathlib.Path(submission_name) / in_csv_name
     upload_dir = pathlib.Path(submission_name) / "upload"
     pipeline_in_dir = pathlib.Path(submission_name) / "pipeline_in"
@@ -543,11 +536,11 @@ def main():
     if upload_dir.exists():
         upload_to_sp3(submission_name)
     elif pipeline_in_dir.exists():
-        run_pipeline(submission_name)
+        run_pipeline(submission_name, number_of_files_per_sample)
     elif input_csv.exists():
         prepare_data(submission_name)
     else:
-        create_template(submission_name, sys.argv[2:])
+        create_template(submission_name, sys.argv[2:], number_of_files_per_sample)
 
 
 if __name__ == "__main__":

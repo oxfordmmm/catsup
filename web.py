@@ -5,7 +5,6 @@ import csv
 import json
 import os
 import pathlib
-import psutil
 import shutil
 import threading
 import time
@@ -13,6 +12,7 @@ import webbrowser
 
 import argh
 import flask
+import psutil
 
 import catsup
 
@@ -209,8 +209,39 @@ def page1():
         submission_name = flask.request.form.get("submission_name")
         submission_dir = flask.request.form.get("submission_dir")
         submission_par_url = flask.request.form.get("submission_par_url")
+        submission_files_per_sample = flask.request.form.get(
+            "submission_files_per_sample"
+        )
+        try:
+            submission_files_per_sample = int(submission_files_per_sample)
+        except:
+            error_msg = "Couldn't parse files per sample as a number"
+            return flask.render_template(
+                "new_submission.jinja2", title=title, error_msg=error_msg
+            )
+        if not submission_name:
+            error_msg = "Submission name can't be empty"
+            return flask.render_template(
+                "new_submission.jinja2", title=title, error_msg=error_msg
+            )
+        if not submission_dir:
+            error_msg = "Submission directory can't be empty"
+            return flask.render_template(
+                "new_submission.jinja2", title=title, error_msg=error_msg
+            )
 
-        r = catsup.create_template(submission_name, [submission_dir], api=True)
+        r = catsup.create_template(
+            submission_name, [submission_dir], submission_files_per_sample, api=True
+        )
+        try:
+            with open(pathlib.Path(submission_name) / ".files_per_sample", "w") as f:
+                f.write(str(submission_files_per_sample))
+        except:
+            error_msg = "Couldn't save number of files sample to .files_per_sample"
+            return flask.render_template(
+                "new_submission.jinja2", title=title, error_msg=error_msg
+            )
+
         r2 = save_par_url(submission_name, submission_par_url)
 
         if r["status"] == "error":
@@ -221,13 +252,13 @@ def page1():
             error_msg = error_msgs.get(r.get("reason"), "Unknown error")
 
             return flask.render_template(
-                "index.jinja2", title=title, error_msg=error_msg
+                "new_submission.jinja2", title=title, error_msg=error_msg
             )
 
         if r2:
             error_msg = "Couldn't save par_url"
             return flask.render_template(
-                "index.jinja2", title=title, error_msg=error_msg
+                "new_submission.jinja2", title=title, error_msg=error_msg
             )
 
         if r["status"] == "success":
@@ -236,6 +267,23 @@ def page1():
     return flask.render_template(
         "new_submission.jinja2", title=title, error_msg=error_msg
     )
+
+
+def find_sample_name_mismatch(rows):
+    """
+    if we have eg. paired sample file names file1_1.fastq.gz and file1_2.fastq.gz
+    then both of these files must have the same sample name (probably file1)
+
+    This function returns any mismatches
+    """
+    ret = list()
+    for (index, subindex), row in rows.items():
+        if subindex != 1:
+            sam_name_1 = row.get("sample_name")
+            sam_name_2 = rows.get((index, "1"), dict()).get("sample_name")
+            if sam_name_1 != sam_name_2:
+                ret.append((index, sam_name_1, sam_name_2))
+    return ret
 
 
 @APP.route("/metadata/<submission_name>", methods=["GET", "POST"])
@@ -255,9 +303,31 @@ def page2(submission_name):
             for k, v in flask.request.form.items():
                 if k[0:2] == "XX":
                     _, sample_index, sample_subindex, item_name = k.split("-")
-                    rows[f"{sample_index}_{sample_subindex}"][item_name] = v
-            # move inputs.csv to .inputs.csv.old
-            (pathlib.Path(submission_name) / "inputs.csv").rename(".inputs.csv.old")
+                    rows[(sample_index, sample_subindex)][item_name] = v
+
+            # backup inputs.csv to .inputs.csv.old
+            # TODO doesn't work?
+            # (pathlib.Path(submission_name) / "inputs.csv").rename(".inputs.csv.old")
+
+            # find samples that have mismatched names
+            ret = find_sample_name_mismatch(rows)
+            if ret:
+                errors = list()
+                for r in ret:
+                    errors.append(
+                        f"Sample files for sample #{r[0]} have different sample names: {r[1]} and {r[2]}."
+                    )
+
+                return flask.render_template(
+                    "metadata.jinja2",
+                    title="Step 1: Edit Submission Metadata",
+                    submission_name=submission_name,
+                    csv=csvdata,
+                    overrides=overrides,
+                    truncate_sample_name=truncate_sample_name,
+                    errors=errors,
+                )
+
             # save new inputs.csv
             with open(
                 pathlib.Path(submission_name) / "inputs.csv", "w", newline=""
@@ -338,7 +408,7 @@ def page4(submission_name):
     title = "Step 3: Run preprocessing pipeline"
     running = False
     ok = False
-    error = False
+    error = ""
     refresh = False
     start = False
     nf_log = None
@@ -347,7 +417,7 @@ def page4(submission_name):
     if (pathlib.Path(submission_name) / ".step3-ok").exists():
         ok = True
     if (pathlib.Path(submission_name) / ".step3-error").exists():
-        error = True
+        error = "Nextflow failed"
     if flask.request.args.get("refresh") and not (ok or error):
         refresh = True
     if flask.request.args.get("start"):
@@ -355,8 +425,27 @@ def page4(submission_name):
     if running or ok or error:
         nf_log = get_nextflow_log(submission_name)
 
+    try:
+        with open(pathlib.Path(submission_name) / ".files_per_sample") as f:
+            number_of_files_per_sample = int(f.read())
+    except:
+        error = "Couldn't read .files_per_sample file"
+        return flask.render_template(
+            "pipeline.jinja2",
+            title=title,
+            submission_name=submission_name,
+            running=running,
+            ok=ok,
+            error=error,
+            refresh=refresh,
+            nf_log=nf_log,
+        )
+
     if start:
-        threading.Thread(target=catsup.run_pipeline, args=(submission_name,)).start()
+        threading.Thread(
+            target=catsup.run_pipeline,
+            args=(submission_name, number_of_files_per_sample),
+        ).start()
         return flask.redirect(f"/pipeline/{submission_name}?refresh=1")
 
     return flask.render_template(
