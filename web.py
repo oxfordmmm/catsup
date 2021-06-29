@@ -499,7 +499,7 @@ def page5(submission_name):
 
 def main():
     if os.environ.get("FLASK_DEBUG"):
-        APP.run(host="0.0.0.0", port=8080, debug=True)
+        APP.run(host="127.0.0.1", port=8080, debug=True)
     else:
 
         def browser_open():
@@ -507,7 +507,7 @@ def main():
             webbrowser.open_new("http://127.0.0.1:8080")
 
         threading.Thread(target=browser_open).start()
-        APP.run(host="0.0.0.0", port=8080)
+        APP.run(host="127.0.0.1", port=8080)
 
 
 if __name__ == "__main__":
