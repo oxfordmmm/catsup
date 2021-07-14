@@ -12,14 +12,19 @@
       <h2>Success!</h2>
       <p>The data has been uploaded.</p>
       <p><strong>Your upload identifier is <span class="w3-green" style="padding: 2px;font-family: monospace;">{{submission_uuid4}}</span></strong></p>
-<p><a href="/"><button class="w3-btn w3-blue"><i class="fa fa-arrow-left fa-fw"></i> Back to index</button></a></p>    </div>
+      <p><a href="/"><button class="w3-btn w3-blue"><i class="fa fa-arrow-left fa-fw"></i> Back to index</button></a></p>    </div>
 
   {% elif error %}
     <div class="w3-panel w3-red">
       <h2>Error!</h2>
       <p>An unrecoverable error has occured</p>
-      <p>Please email denis.volk@ndm.ox.ac.uk for help.</p>
+      <p>Please email the log below to denis.volk@ndm.ox.ac.uk for help.</p>
     </div>
+    {% if error_content %}
+      <h2>Error log</h2>
+      <textarea class="w3-input" readonly rows=20>{{ error_content }}</textarea>
+    {% endif %}
+
   {% else %}
     <div class="w3-panel w3-pale-green">
       <h2>Ready</h2>

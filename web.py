@@ -469,6 +469,8 @@ def page5(submission_name):
     refresh = False
     start = False
     submission_uuid4 = None
+    error_content = None
+
     if (pathlib.Path(submission_name) / ".step4-running").exists():
         running = True
     if (pathlib.Path(submission_name) / ".step4-ok").exists():
@@ -480,6 +482,14 @@ def page5(submission_name):
         refresh = True
     if flask.request.args.get("start"):
         start = True
+
+    if error:
+        try:
+            with open(pathlib.Path(submission_name) / ".step4-error") as f:
+                error_content = json.dumps(json.loads(f.read()), indent=4)
+        except Exception as e:
+            # a comedy of errors
+            error_content = str(e)
 
     if start:
         threading.Thread(target=catsup.upload_to_sp3, args=(submission_name,)).start()
@@ -494,6 +504,7 @@ def page5(submission_name):
         ok=ok,
         error=error,
         refresh=refresh,
+        error_content=error_content,
     )
 
 

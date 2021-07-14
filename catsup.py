@@ -64,6 +64,10 @@ in_fieldnames = [
 ]
 
 
+sample_guid_map = dict()
+guid_index = collections.defaultdict(int)
+
+
 def make_example_entries(n, files, number_of_files_per_sample):
     ret = list()
     k = 0
@@ -199,9 +203,6 @@ def create_template(submission_name, args, number_of_files_per_sample, api=False
         return {"status": "success", "input_csv": input_csv}
 
 
-sample_guid_map = dict()
-
-
 def sample_name_to_guid(sample_name):
     """
     return sample uuid or create one if it doesn't exist
@@ -211,8 +212,6 @@ def sample_name_to_guid(sample_name):
         sample_guid_map[sample_name] = str(uuid.uuid4())
     return sample_guid_map[sample_name]
 
-
-guid_index = collections.defaultdict(int)
 
 
 def sample_uuid_to_index(sample_uuid4):
@@ -239,6 +238,11 @@ def rename_sample(sample_filename, renamed_filename, submission_name):
 
 
 def prepare_data(submission_name):
+    global sample_guid_map
+    sample_guid_map = dict()
+    global guid_index
+    guid_index = collections.defaultdict(int)
+
     def api_begin():
         (pathlib.Path(submission_name) / ".step2-running").touch(exist_ok=True)
         unlink_missing_ok(pathlib.Path(submission_name) / ".step2-ok")
@@ -309,14 +313,14 @@ def prepare_data(submission_name):
             )
             out["submission_uuid4"] = submission_uuid4
             out["sample_uuid4"] = sample_name_to_guid(out["sample_name"])
-            guid_index = sample_uuid_to_index(out["sample_uuid4"])
+            guid_index_ = sample_uuid_to_index(out["sample_uuid4"])
 
             renamed_filename = new_sample_filename(
                 out["sample_name"],
                 out["sample_filename"],
                 out["sample_file_extension"],
                 out["sample_uuid4"],
-                guid_index,
+                guid_index_,
             )
 
             rename_sample(out["sample_filename"], renamed_filename, submission_name)
@@ -442,6 +446,13 @@ def run_pipeline(submission_name, number_of_files_per_sample):
         )
         sys.exit(1)
 
+    if not (pathlib.Path(submission_name) / "upload").is_dir():
+        api_error({"status": "failure", "reason": "no_upload_dir"})
+        sys.exit(1)
+    if not list((pathlib.Path(submission_name) / "upload").glob("*")):
+        api_error({"status": "failure", "reason": "empty_upload_dir"})
+        sys.exit(1)
+
     try:
         nf_clean_cmd = "nextflow clean -f -k"
         p = subprocess.check_output(shlex.split(nf_clean_cmd), cwd=str(new_dir))
@@ -473,7 +484,21 @@ def upload_to_sp3(submission_name):
     step_msg(4, "begin")
     print("Uploading to S3")
 
-    submission_uuid4 = hash_clean_files(submission_name)
+    try:
+        submission_uuid4 = hash_clean_files(submission_name)
+    except Exception as e:
+        api_error(
+            {
+                "status": "failure",
+                "reason": "couldn't hash files",
+                "more": {"error_exception_str": str(e)},
+                "par_url": par_url,
+                "files": [
+                    str(x) for x in pathlib.Path(submission_name).glob("upload/*")
+                ],
+            }
+        )
+        sys.exit(1)
 
     s = pathlib.Path(f"{submission_name}/sp3data.csv")
     d = pathlib.Path(f"{submission_name}/upload/sp3data.csv")
@@ -499,9 +524,35 @@ def upload_to_sp3(submission_name):
     if par_url:
         # upload to oracle s3 with preauthenticated request
         try:
-            par_upload.upload_run(par_url, submission_name)
-        except:
-            api_error({"status": "failure", "reason": "par_upload_failed"})
+            error = par_upload.upload_run(par_url, submission_name)
+            if error:
+                api_error(
+                    {
+                        "status": "failure",
+                        "reason": "par_upload_failed",
+                        "more": error,
+                        "par_url": par_url,
+                        "files": [
+                            str(x)
+                            for x in pathlib.Path(submission_name).glob("upload/*")
+                        ],
+                    }
+                )
+                sys.exit(1)
+
+        except Exception as e:
+            api_error(
+                {
+                    "status": "failure",
+                    "reason": "par_upload_failed",
+                    "more": {"error_exception_str": str(e)},
+                    "par_url": par_url,
+                    "files": [
+                        str(x) for x in pathlib.Path(submission_name).glob("upload/*")
+                    ],
+                }
+            )
+            sys.exit(1)
 
     if bucket:
         # upload to bucket with s3cmd
@@ -515,6 +566,7 @@ def upload_to_sp3(submission_name):
             p = subprocess.check_output(shlex.split(s3cmd))
         except subprocess.CalledProcessError:
             api_error({"status": "failure", "reason": "s3cmd_failed"})
+            sys.exit(1)
         print(f"Uploaded files to: {bucket}/{submission_uuid4}")
 
     step_msg(4, "end")

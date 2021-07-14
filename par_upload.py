@@ -1,6 +1,8 @@
 import csv
 import os
 import pathlib
+import subprocess
+import shlex
 
 import argh
 
@@ -9,18 +11,36 @@ def run(cmd, trace=True):
     if not os.environ.get("NO_TRACE") or not trace:
         print(cmd)
     if not os.environ.get("DUMMY_RUN"):
-        os.system(cmd)
+        try:
+            subprocess.check_output(shlex.split(cmd))
+        except Exception as e:
+            return {
+                "error_command": cmd,
+                "error_exception_str": str(e),
+            }
 
 
 def upload_file(par_url, u_file, cloud_prefix):
     u_file = pathlib.Path(u_file)
-    cmd = f"curl -X PUT --data-binary '@{u_file}' {par_url}{cloud_prefix}/{u_file.name}"
-    run(cmd)
+    cmd  = f"curl -f -X PUT --data-binary '@{u_file}' {par_url}{cloud_prefix}/{u_file.name}"
+    error = run(cmd)
+    return error
+
+
+def mark_finished(par_url, u_dir, cloud_prefix):
+    u_file = pathlib.Path(u_dir) / "upload_done.txt"
+    u_file.touch()
+    cmd = f"curl -f -X PUT --data-binary '@{u_file}' {par_url}{cloud_prefix}/{u_file.name}"
+    error = run(cmd)
+    return error
 
 
 def upload_dir(par_url, u_dir, cloud_prefix):
     for u_file in pathlib.Path(u_dir).glob("*"):
-        upload_file(par_url, u_file, cloud_prefix)
+        error = upload_file(par_url, u_file, cloud_prefix)
+        if error:
+            return error
+    return mark_finished(par_url, u_dir, cloud_prefix)
 
 
 def get_submission_name_from_sp3data_csv(u_dir):
@@ -35,7 +55,8 @@ def get_submission_name_from_sp3data_csv(u_dir):
 def upload_run(par_url, u_dir):
     u_dir = pathlib.Path(u_dir) / "upload"
     submission_uuid4 = get_submission_name_from_sp3data_csv(u_dir)
-    upload_dir(par_url, u_dir, submission_uuid4)
+    error = upload_dir(par_url, u_dir, submission_uuid4)
+    return error
 
 
 if __name__ == "__main__":
