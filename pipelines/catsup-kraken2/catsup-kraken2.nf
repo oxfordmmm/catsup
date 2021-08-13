@@ -32,6 +32,7 @@ SP3 catsup-kraken2 nextflow pipeline
 --db            $params.db
 --paired        $params.paired
 --output_dir    $params.output_dir
+--sequencing	$params.sequencing
 ************************************
 """
 log.info "                         "
@@ -188,7 +189,58 @@ if (paired == true){
         """
     }
 }
-else{
+else if (params.sequencing == 'ONT'){
+    process ONT_classification {
+
+    tag { read1 }
+
+    memory '10 GB'
+
+    //publishDir "${output_dir}/", mode: 'copy'
+
+    input:
+    set dataset_id, read1 from trim_out
+
+    output:
+    set dataset_id, read1, file("${dataset_id}.classification_non_human_read_list.txt"), file("${dataset_id}.classification_human_read_list.txt") into non_human_list
+
+    script:
+    kraken2_summary              = "${dataset_id}.species_classification.txt"
+    kraken2_read_classification  = "${dataset_id}.read_classification.txt"
+    kraken2_human_read_list      = "${dataset_id}.classification_human_read_list.txt"
+    kraken2_non_human_read_list  = "${dataset_id}.classification_non_human_read_list.txt"
+
+    """
+    cat <<- EOF >> filter.py
+    import sys
+
+    filename = sys.argv[1]
+
+    tbl1 = open(filename).readlines()
+    tbl1 = [x.split('\t') for x in tbl1]
+
+    #
+    # write non-human read ids
+    #
+    human_id = '9606'
+
+    for row in tbl1:
+        if row[2] != human_id:
+            print(row[0])
+    EOF
+
+    centrifuge -q -x ${db} --mm -U ${read1}  --output ${kraken2_read_classification} --min-hitlen 16 -k 1
+
+    echo "==== kraken2 ====" > ${kraken2_human_read_list}
+
+    echo "==== human reads ====" >> ${kraken2_human_read_list}
+    awk '\$3==\"9606\" { print \$1 }' ${kraken2_read_classification} >> ${kraken2_human_read_list}
+    python3 filter.py ${kraken2_read_classification} > ${kraken2_non_human_read_list}
+
+    """
+    }
+}
+else {
     process classification {
 
     tag { read1 }
