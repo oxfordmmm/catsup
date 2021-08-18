@@ -35,7 +35,7 @@ def concat_files_cmd(directory: str, out_file: str):
     cmds = list()
     if is_dir_gzipped(directory):
         for f in files:
-            cmds.append(f"zcat {shlex.quote(f)} | gzip -c >> {shlex.quote(out_file)}")
+            cmds.append(f"cat {shlex.quote(f)} >> {shlex.quote(out_file)}")
     else:
         for f in files:
             cmds.append(f"cat {shlex.quote(f)} | gzip -c >> {shlex.quote(out_file)}")
