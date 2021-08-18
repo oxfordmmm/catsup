@@ -9,6 +9,8 @@ import shutil
 import threading
 import time
 import webbrowser
+import datetime
+import logging
 
 import argh
 import flask
@@ -17,6 +19,12 @@ import psutil
 import catsup
 
 APP = flask.Flask("catsup-web")
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 
 
 def read_input_csv(submission_name):
@@ -29,7 +37,7 @@ def get_submission_uuid4(submission_name):
         with open(pathlib.Path(submission_name) / "upload" / "sp3data.csv") as f:
             return list(csv.DictReader(f))[0]["submission_uuid4"]
     except Exception as e:
-        print(str(e))
+        logging.error(str(e))
 
 
 def get_submissions():
@@ -49,7 +57,7 @@ def get_submission_sample_map(submission_name):
         with open(pathlib.Path(submission_name) / "sample_uuid_map.csv") as f:
             return sorted(list(csv.DictReader(f)), key=lambda x: x["sample_uuid4"])
     except Exception as e:
-        print(str(e))
+        logging.error(str(e))
         return list()
 
 
@@ -94,7 +102,7 @@ def config_error_check():
         "pipelines.catsup-kraken2",
         "pipelines.catsup-kraken2.script",
         "pipelines.catsup-kraken2.image",
-        "pipelines.catsup-kraken2.human_ref",
+        "pipelines.catsup-kraken2.kraken2_human_ref",
     ]:
         if not k(key, conf):
             errors.append({"code": "config_json_missing_key", "details": key})
@@ -294,8 +302,16 @@ def page1():
                 return flask.redirect(f"/metadata/{submission_name}")
             return flask.redirect(f"/nanopore_preprocess/{submission_name}")
 
+    dt = datetime.datetime.now()
+    proposed_submission_name = (
+        f"submission-{dt.year}_{dt.month}_{dt.day}-{dt.hour}_{dt.minute}_{dt.second}"
+    )
+
     return flask.render_template(
-        "new_submission.jinja2", title=title, error_msg=error_msg
+        "new_submission.jinja2",
+        title=title,
+        error_msg=error_msg,
+        proposed_submission_name=proposed_submission_name,
     )
 
 
@@ -438,7 +454,7 @@ def page2(submission_name):
                 )
                 writer.writeheader()
                 for _, row in rows.items():
-                    print(row)
+                    logging.debug(row)
                     writer.writerow(row)
 
             return flask.redirect(f"/stage/{submission_name}")

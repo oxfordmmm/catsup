@@ -59,10 +59,8 @@ def nanopore_notmultiplexed_preprocess(input_dir: str, output_dir: str):
 
 # single dir not multiplexed gzipped:
 # /media/grid0/Ngon_SureSelect_342UB/no_sample/20210722_0850_X3_FAQ54593_c38f4b52/fastq_pass/
-# ?
+# multiplexed gzipped
 # /media/grid0/DFB_R_15/no_sample/20210525_1816_X5_FAP94036_c8c034c5/fastq_pass/
-# ?
-# /media/grid1/DFB_R_16/no_sample/20210714_1840_X1_FAP83320_5aff62e7/fastq_pass/
 
 
 def nanopore_multiplexed_preprocess(input_dir: str, output_dir: str):

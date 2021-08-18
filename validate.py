@@ -100,7 +100,7 @@ def validate_config(config):
         logging.error(f"Pipeline {pipeline} has no configuration")
         return False
 
-    pipeline_must_have_keys = ["script", "image", "human_ref"]
+    pipeline_must_have_keys = ["script", "image", "kraken2_human_ref"]
 
     for pipeline_name, pipeline_conf in pipelines.items():
         if type(pipeline_conf) != dict:
@@ -117,7 +117,7 @@ def validate_config(config):
                 return False
 
         for k, v in pipeline_conf.items():
-            if not pathlib.Path(v).exists():
+            if not pathlib.Path(v).exists() and k != "centrifuge_human_ref":
                 logging.error("Failed to validate config:")
                 logging.error(
                     f"Pipeline config {pipeline_name}: file {v} does not exist"
