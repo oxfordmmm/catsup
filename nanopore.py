@@ -13,7 +13,7 @@ def is_dir_gzipped(directory: str) -> bool:
     """
     Check if the all the files in directory have a '.gz' extension
     """
-    files = Path(directory).glob("*")
+    files = Path(directory).glob("**")
     if not files:
         return False
     files = filter(lambda x: x.is_file(), files)

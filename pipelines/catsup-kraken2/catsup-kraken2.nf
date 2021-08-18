@@ -57,6 +57,7 @@ else{
 * PART 1:
 * trim_galore --fastqc --paired ${read1} ${read2}
 */
+if (params.sequencing != 'ONT'){
 if (paired == true){
 
     process process_trim_paired {
@@ -130,6 +131,7 @@ else{
     """
     }
 }
+}
 /***********
 * PART 2: Identify human reads
 * kraken2 --db ${db} --report ${kraken2_summary} --output ${kraken2_read_classification} --paired ${read1} ${read2}
@@ -194,12 +196,8 @@ else if (params.sequencing == 'ONT'){
 
     tag { read1 }
 
-    memory '10 GB'
-
-    //publishDir "${output_dir}/", mode: 'copy'
-
     input:
-    set dataset_id, read1 from trim_out
+    set dataset_id, read1 from fqs 
 
     output:
     set dataset_id, read1, file("${dataset_id}.classification_non_human_read_list.txt"), file("${dataset_id}.classification_human_read_list.txt") into non_human_list
