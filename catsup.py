@@ -80,7 +80,7 @@ def make_example_entries(n, files, number_of_files_per_sample):
     for i in range(1, n + 1):
         for j in range(1, number_of_files_per_sample + 1):
             if files:
-                logging.debug(i, j, k)
+                logging.debug(f"{i}, {j}, {k}")
                 filename = files[k]
                 k = k + 1
                 sample_name = str(filename.name).split(".")[0]

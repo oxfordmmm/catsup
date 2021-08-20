@@ -103,6 +103,7 @@ def config_error_check():
         "pipelines.catsup-kraken2.script",
         "pipelines.catsup-kraken2.image",
         "pipelines.catsup-kraken2.kraken2_human_ref",
+        "pipelines.catsup-kraken2.centrifuge_human_ref",
     ]:
         if not k(key, conf):
             errors.append({"code": "config_json_missing_key", "details": key})
@@ -110,7 +111,7 @@ def config_error_check():
     for f in [
         "pipelines.catsup-kraken2.script",
         "pipelines.catsup-kraken2.image",
-        "pipelines.catsup-kraken2.human_ref",
+        "pipelines.catsup-kraken2.kraken2_human_ref",
     ]:
         f = k(f, conf)
         if f:
