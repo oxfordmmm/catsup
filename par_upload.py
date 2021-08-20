@@ -22,7 +22,7 @@ def run(cmd, trace=True):
 
 def upload_file(par_url, u_file, cloud_prefix):
     u_file = pathlib.Path(u_file)
-    cmd  = f"curl -f -X PUT --data-binary '@{u_file}' {par_url}{cloud_prefix}/{u_file.name}"
+    cmd  = f"curl -f -X PUT -T {u_file} {par_url}{cloud_prefix}/{u_file.name}"
     error = run(cmd)
     return error
 

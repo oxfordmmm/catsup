@@ -1,5 +1,4 @@
 #! /usr/bin/env python3
-
 import collections
 import copy
 import csv
@@ -15,16 +14,23 @@ import uuid
 
 import par_upload
 import validate
+import nanopore
 
 cfg = None
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+)
 
 
 def read_cfg(cfg_file, cfg_file_example):
     if not pathlib.Path(cfg_file).exists():
         if pathlib.Path(cfg_file_example).exists():
-            print(f"{cfg_file} not found. Copying from {cfg_file_example}")
+            logging.info(f"{cfg_file} not found. Copying from {cfg_file_example}")
             shutil.copyfile(cfg_file_example, cfg_file)
-            print(f"Please edit {cfg_file} to make it work with your environment")
+            logging.info(f"Please edit {cfg_file} to make it work with your environment")
             sys.exit(0)
         else:
             logging.error(
@@ -74,7 +80,7 @@ def make_example_entries(n, files, number_of_files_per_sample):
     for i in range(1, n + 1):
         for j in range(1, number_of_files_per_sample + 1):
             if files:
-                print(i, j, k)
+                logging.debug(f"{i}, {j}, {k}")
                 filename = files[k]
                 k = k + 1
                 sample_name = str(filename.name).split(".")[0]
@@ -149,19 +155,73 @@ def step_msg(step, state, **kwargs):
     }
 
     if state == "begin":
-        print(f"\n*** Preprocessing step: {steps[step]}\n")
+        logging.info(f"\n*** Preprocessing step: {steps[step]}\n")
 
     if state == "end":
-        print(f"\n*** Finished preprocessing step: {steps[step]}")
+        logging.info(f"\n*** Finished preprocessing step: {steps[step]}")
         if step + 1 in steps:
-            print(f"\n*** Next step: {steps[step+1]}\n")
+            logging.info(f"\n*** Next step: {steps[step+1]}\n")
 
 
-def create_template(submission_name, args, number_of_files_per_sample, api=False):
+def nanopore_prepare(submission_name):
+    def api_begin():
+        (pathlib.Path(submission_name) / ".step1.5-running").touch(exist_ok=True)
+        unlink_missing_ok(pathlib.Path(submission_name) / ".step1.5-ok")
+        unlink_missing_ok(pathlib.Path(submission_name) / ".step1.5-error")
+
+    def api_error(err_dict):
+        unlink_missing_ok(pathlib.Path(submission_name) / ".step1.5-running")
+        unlink_missing_ok(pathlib.Path(submission_name) / ".step1.5-ok")
+        with open(pathlib.Path(submission_name) / ".step1.5-error", "w") as f:
+            f.write(json.dumps(err_dict))
+
+    def api_success():
+        unlink_missing_ok(pathlib.Path(submission_name) / ".step1.5-running")
+        (pathlib.Path(submission_name) / ".step1.5-ok").touch(exist_ok=True)
+        unlink_missing_ok(pathlib.Path(submission_name) / ".step1.5-error")
+
+    api_begin()
+
+    nanopore_variant = open(
+        pathlib.Path(submission_name) / ".submission_variant"
+    ).read()
+    input_dir = open(pathlib.Path(submission_name) / ".submission_dir").read()
+
+    if nanopore_variant:
+        nanopore_output_dir = pathlib.Path(submission_name) / "nanopore_concated"
+        nanopore_output_dir.mkdir(exist_ok=True)
+        nanopore_cmds = list()
+
+        if nanopore_variant == "multiplexed_v1":
+            nanopore_cmds = nanopore.nanopore_multiplexed_preprocess(
+                input_dir, str(nanopore_output_dir)
+            )
+
+        if nanopore_variant == "notmultiplexed_v1":
+            nanopore_cmds = nanopore.nanopore_notmultiplexed_preprocess(
+                input_dir, str(nanopore_output_dir)
+            )
+
+        for cmds_list in nanopore_cmds:
+            for cmd in cmds_list:
+                logging.info(cmd)
+                os.system(cmd)
+
+    api_success()
+
+
+def create_template(
+    submission_name,
+    args,
+    number_of_files_per_sample,
+    nanopore_variant="",
+    api=False,
+    trunc=False,
+):
     step_msg(1, "begin")
     pathlib.Path(submission_name).mkdir(exist_ok=True)
     input_csv = pathlib.Path(submission_name) / in_csv_name
-    if input_csv.exists():
+    if input_csv.exists() and not trunc:
         if api:
             return {"status": "error", "reason": "input_csv_exists"}
         else:
@@ -194,8 +254,8 @@ def create_template(submission_name, args, number_of_files_per_sample, api=False
             ):
                 writer.writerow(row)
 
-    print(f"Created {input_csv}")
-    print("Edit the file to add your samples.")
+    logging.info(f"Created {input_csv}")
+    logging.info("Edit the file to add your samples.")
 
     step_msg(1, "end")
 
@@ -211,7 +271,6 @@ def sample_name_to_guid(sample_name):
     if sample_name not in sample_guid_map:
         sample_guid_map[sample_name] = str(uuid.uuid4())
     return sample_guid_map[sample_name]
-
 
 
 def sample_uuid_to_index(sample_uuid4):
@@ -233,7 +292,7 @@ def rename_sample(sample_filename, renamed_filename, submission_name):
     i = pathlib.Path(sample_filename).absolute()
     (pathlib.Path(submission_name) / "pipeline_in").mkdir(exist_ok=True)
     o = pathlib.Path(submission_name) / "pipeline_in" / renamed_filename
-    print(f"{o} -> {i}")
+    logging.info(f"{o} -> {i}")
     os.symlink(i, o)
 
 
@@ -261,7 +320,7 @@ def prepare_data(submission_name):
 
     api_begin()
     step_msg(2, "begin")
-    print("Preparing data for pipeline")
+    logging.info("Preparing data for pipeline")
 
     input_csv = pathlib.Path(submission_name) / in_csv_name
 
@@ -340,8 +399,8 @@ def prepare_data(submission_name):
     sp3data_csv = pathlib.Path(submission_name) / "sp3data.csv"
     sample_map_csv = pathlib.Path(submission_name) / "sample_uuid_map.csv"
 
-    print(f"Wrote sp3 submission data to: {sp3data_csv}")
-    print(f"Wrote sample file <-> uuid map to: {sample_map_csv}")
+    logging.info(f"Wrote sp3 submission data to: {sp3data_csv}")
+    logging.info(f"Wrote sample file <-> uuid map to: {sample_map_csv}")
 
     step_msg(2, "end")
 
@@ -412,25 +471,40 @@ def run_pipeline(submission_name, number_of_files_per_sample):
     pipeline = cfg.get("pipeline", "catnip")
     pipeline_script = cfg.get("pipelines").get(pipeline).get("script")
     pipeline_image = cfg.get("pipelines").get(pipeline).get("image")
-    pipeline_human_ref = cfg.get("pipelines").get(pipeline).get("human_ref")
+    pipeline_human_ref = cfg.get("pipelines").get(pipeline).get("kraken2_human_ref")
     container = cfg.get("container")
     nextflow_additional_params = cfg.get("nextflow_additional_params")
 
+    ont_param = str()
+    try:
+        nanopore_variant = open(
+            pathlib.Path(submission_name) / ".submission_variant"
+        ).read()
+        if (
+            nanopore_variant == "multiplexed_v1"
+            or nanopore_variant == "notmultiplexed_v1"
+        ):
+            ont_param = "--sequencing ONT"
+            pipeline_human_ref = cfg.get("pipelines").get(pipeline).get("centrifuge_human_ref")
+
+    except Exception:
+        pass
+
     step_msg(3, "begin")
-    print(f"Running pipeline: {pipeline}")
+    logging.info(f"Running pipeline: {pipeline}")
 
     if number_of_files_per_sample == 2:
         nf_cmd = f"nextflow {pipeline_script} {nextflow_additional_params} --input_dir ../pipeline_in/ --read_pattern '*_{{1,2}}.fastq.gz' --paired true --output_dir ../upload -with-{container} {pipeline_image} --db {pipeline_human_ref}"
     if number_of_files_per_sample == 1:
-        nf_cmd = f"nextflow {pipeline_script} {nextflow_additional_params} --input_dir ../pipeline_in/ --read_pattern '*_1.fastq.gz' --paired false --output_dir ../upload -with-{container} {pipeline_image} --db {pipeline_human_ref}"
+        nf_cmd = f"nextflow {pipeline_script} {nextflow_additional_params} {ont_param} --input_dir ../pipeline_in/ --read_pattern '*_1.fastq.gz' --paired false --output_dir ../upload -with-{container} {pipeline_image} --db {pipeline_human_ref}"
 
     new_dir = f"{submission_name}/pipeline_run"
     pathlib.Path(new_dir).mkdir(exist_ok=True)
-    print(f"Changing directory to: {new_dir}")
-    print(f"Nextflow invocation: {nf_cmd}")
+    logging.info(f"Changing directory to: {new_dir}")
+    logging.info(f"Nextflow invocation: {nf_cmd}")
 
     try:
-        p = subprocess.check_output(shlex.split(nf_cmd), cwd=str(new_dir))
+        subprocess.check_output(shlex.split(nf_cmd), cwd=str(new_dir))
     except subprocess.CalledProcessError as e:
         api_error(
             {
@@ -455,9 +529,9 @@ def run_pipeline(submission_name, number_of_files_per_sample):
 
     try:
         nf_clean_cmd = "nextflow clean -f -k"
-        p = subprocess.check_output(shlex.split(nf_clean_cmd), cwd=str(new_dir))
+        subprocess.check_output(shlex.split(nf_clean_cmd), cwd=str(new_dir))
     except Exception as e:
-        print(e)
+        logging.error(e)
 
     api_success()
     step_msg(3, "end")
@@ -482,7 +556,13 @@ def upload_to_sp3(submission_name):
 
     api_begin()
     step_msg(4, "begin")
-    print("Uploading to S3")
+    logging.info("Uploading to S3")
+
+    try:
+        with open(pathlib.Path(submission_name) / ".par_url") as f:
+            par_url = f.read().strip()
+    except Exception:
+        par_url = None
 
     try:
         submission_uuid4 = hash_clean_files(submission_name)
@@ -506,17 +586,11 @@ def upload_to_sp3(submission_name):
 
     bucket = cfg.get("upload").get("s3").get("bucket")
 
-    try:
-        with open(pathlib.Path(submission_name) / ".par_url") as f:
-            par_url = f.read().strip()
-    except:
-        par_url = None
-
     if not par_url:
         par_url = cfg.get("upload").get("s3").get("par_url")
     if not bucket and not par_url:
         logging.error(
-            f"You need either an upload.s3.bucket key or an upload.s3.par_url key"
+            "You need either an upload.s3.bucket key or an upload.s3.par_url key"
         )
         api_error({"status": "failure", "reason": "upload_misconfiguration"})
         sys.exit(1)
@@ -561,13 +635,13 @@ def upload_to_sp3(submission_name):
             [str(x) for x in pathlib.Path(f"{submission_name}/upload/").glob("*")]
         )
         s3cmd = f"s3cmd -c {s3cmd_config} put {files} {bucket}/{submission_uuid4}/"
-        print(f"s3cmd invocation: {s3cmd}")
+        logging.info(f"s3cmd invocation: {s3cmd}")
         try:
-            p = subprocess.check_output(shlex.split(s3cmd))
+            subprocess.check_output(shlex.split(s3cmd))
         except subprocess.CalledProcessError:
             api_error({"status": "failure", "reason": "s3cmd_failed"})
             sys.exit(1)
-        print(f"Uploaded files to: {bucket}/{submission_uuid4}")
+        logging.info(f"Uploaded files to: {bucket}/{submission_uuid4}")
 
     step_msg(4, "end")
     api_success()
@@ -575,7 +649,7 @@ def upload_to_sp3(submission_name):
 
 def main():
     if len(sys.argv) <= 1:
-        print("Please pass a submission name as a first argument")
+        logging.error("Please pass a submission name as a first argument")
         sys.exit(1)
     submission_name = sys.argv[1]
     pathlib.Path(submission_name).mkdir(exist_ok=True)

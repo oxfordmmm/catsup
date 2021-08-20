@@ -19,9 +19,16 @@ cd catsup
 
 # download minikraken2 database into catsup/
 wget https://objectstorage.uk-london-1.oraclecloud.com/n/lrbvkel2wjot/b/sp3_deps/o/minikraken2_v2_8GB_201904.tgz --content-disposition
+# download centrifuge database into catsup/centrifuge_database
+mkdir -p centrifuge_database
+wget https://objectstorage.uk-london-1.oraclecloud.com/n/lrbvkel2wjot/b/sp3_deps/o/p_compressed%2Bh%2Bv.tar.gz --content-disposition -P centrifuge_database
 
 # extract minikraken2 database
 tar xf minikraken2_v2_8GB_201904.tgz
+# extract minikraken2 database into centrifuge_database
+cd centrifuge_database
+tar xf p_compressed+h+v.tar.gz
+cd ..
 
 cp config.install-template.json config.json
 sed -i "s,BASE_DIR,$HOME,g" config.json

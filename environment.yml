@@ -7,6 +7,7 @@ channels:
 dependencies:
   - python=3.6
   - kraken2=2.1.1
+  - centrifuge=1.0.4_beta
   - argh
   - flask
   - psutil

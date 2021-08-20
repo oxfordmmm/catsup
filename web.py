@@ -9,6 +9,8 @@ import shutil
 import threading
 import time
 import webbrowser
+import datetime
+import logging
 
 import argh
 import flask
@@ -17,6 +19,12 @@ import psutil
 import catsup
 
 APP = flask.Flask("catsup-web")
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
 
 
 def read_input_csv(submission_name):
@@ -29,7 +37,7 @@ def get_submission_uuid4(submission_name):
         with open(pathlib.Path(submission_name) / "upload" / "sp3data.csv") as f:
             return list(csv.DictReader(f))[0]["submission_uuid4"]
     except Exception as e:
-        print(str(e))
+        logging.error(str(e))
 
 
 def get_submissions():
@@ -49,7 +57,7 @@ def get_submission_sample_map(submission_name):
         with open(pathlib.Path(submission_name) / "sample_uuid_map.csv") as f:
             return sorted(list(csv.DictReader(f)), key=lambda x: x["sample_uuid4"])
     except Exception as e:
-        print(str(e))
+        logging.error(str(e))
         return list()
 
 
@@ -94,7 +102,8 @@ def config_error_check():
         "pipelines.catsup-kraken2",
         "pipelines.catsup-kraken2.script",
         "pipelines.catsup-kraken2.image",
-        "pipelines.catsup-kraken2.human_ref",
+        "pipelines.catsup-kraken2.kraken2_human_ref",
+        "pipelines.catsup-kraken2.centrifuge_human_ref",
     ]:
         if not k(key, conf):
             errors.append({"code": "config_json_missing_key", "details": key})
@@ -102,7 +111,7 @@ def config_error_check():
     for f in [
         "pipelines.catsup-kraken2.script",
         "pipelines.catsup-kraken2.image",
-        "pipelines.catsup-kraken2.human_ref",
+        "pipelines.catsup-kraken2.kraken2_human_ref",
     ]:
         f = k(f, conf)
         if f:
@@ -204,11 +213,27 @@ def page1():
         except Exception as e:
             return str(e)
 
+    def save_submission_dir(submission_name, submission_dir):
+        try:
+            with open(pathlib.Path(submission_name) / ".submission_dir", "w") as f:
+                f.write(submission_dir)
+        except Exception as e:
+            return str(e)
+
+    def save_submission_variant(submission_name, submission_variant):
+        try:
+            with open(pathlib.Path(submission_name) / ".submission_variant", "w") as f:
+                f.write(submission_variant)
+        except Exception as e:
+            return str(e)
+
     error_msg = None
     if flask.request.method == "POST":
         submission_name = flask.request.form.get("submission_name")
         submission_dir = flask.request.form.get("submission_dir")
         submission_par_url = flask.request.form.get("submission_par_url")
+        submission_variant = flask.request.form.get("submission_variant")
+
         submission_files_per_sample = flask.request.form.get(
             "submission_files_per_sample"
         )
@@ -233,6 +258,7 @@ def page1():
         r = catsup.create_template(
             submission_name, [submission_dir], submission_files_per_sample, api=True
         )
+
         try:
             with open(pathlib.Path(submission_name) / ".files_per_sample", "w") as f:
                 f.write(str(submission_files_per_sample))
@@ -243,6 +269,8 @@ def page1():
             )
 
         r2 = save_par_url(submission_name, submission_par_url)
+        r3 = save_submission_dir(submission_name, submission_dir)
+        r4 = save_submission_variant(submission_name, submission_variant)
 
         if r["status"] == "error":
             error_msgs = {
@@ -254,18 +282,91 @@ def page1():
             return flask.render_template(
                 "new_submission.jinja2", title=title, error_msg=error_msg
             )
-
         if r2:
             error_msg = "Couldn't save par_url"
             return flask.render_template(
                 "new_submission.jinja2", title=title, error_msg=error_msg
             )
+        if r3:
+            error_msg = "Couldn't save submission_dir"
+            return flask.render_template(
+                "new_submission.jinja2", title=title, error_msg=error_msg
+            )
+        if r4:
+            error_msg = "Couldn't save submission_variant"
+            return flask.render_template(
+                "new_submission.jinja2", title=title, error_msg=error_msg
+            )
 
         if r["status"] == "success":
-            return flask.redirect(f"/metadata/{submission_name}")
+            if submission_variant == "illumina":
+                return flask.redirect(f"/metadata/{submission_name}")
+            return flask.redirect(f"/nanopore_preprocess/{submission_name}")
+
+    dt = datetime.datetime.now()
+    proposed_submission_name = (
+        f"submission-{dt.year}_{dt.month}_{dt.day}-{dt.hour}_{dt.minute}_{dt.second}"
+    )
 
     return flask.render_template(
-        "new_submission.jinja2", title=title, error_msg=error_msg
+        "new_submission.jinja2",
+        title=title,
+        error_msg=error_msg,
+        proposed_submission_name=proposed_submission_name,
+    )
+
+
+@APP.route("/nanopore_preprocess/<submission_name>", methods=["GET", "POST"])
+def page_nanopore_preprocess(submission_name):
+    title = "Step 1.5: Prepare nanopore inputs"
+    running = False
+    ok = False
+    error = False
+    refresh = False
+    start = False
+    if (pathlib.Path(submission_name) / ".step1.5-running").exists():
+        running = True
+    if (pathlib.Path(submission_name) / ".step1.5-ok").exists():
+        ok = True
+    if (pathlib.Path(submission_name) / ".step1.5-error").exists():
+        error = True
+    if flask.request.args.get("refresh") and not (ok or error):
+        refresh = True
+    if flask.request.args.get("start"):
+        start = True
+
+    if start:
+        threading.Thread(
+            target=catsup.nanopore_prepare, args=(submission_name,)
+        ).start()
+        return flask.redirect(f"/nanopore_preprocess/{submission_name}?refresh=1")
+
+    if ok:
+        submission_dir = (
+            pathlib.Path(submission_name) / "nanopore_concated"
+        ).absolute()
+        r = catsup.create_template(
+            submission_name, [submission_dir], 1, api=True, trunc=True
+        )
+        if r["status"] == "error":
+            error_msgs = {
+                "input_csv_exists": f'This submission name "{submission_name}" already exists. Please pick another name.',
+                "files_dir_missing": f'The submission directory "{submission_dir}" couldn\'t be accessed. Please check if it is correct and try again.',
+            }
+            error_msg = error_msgs.get(r.get("reason"), "Unknown error")
+
+            return flask.render_template(
+                "new_submission.jinja2", title=title, error_msg=error_msg
+            )
+
+    return flask.render_template(
+        "nanopore_preprocess.jinja2",
+        title=title,
+        submission_name=submission_name,
+        running=running,
+        ok=ok,
+        error=error,
+        refresh=refresh,
     )
 
 
@@ -354,7 +455,7 @@ def page2(submission_name):
                 )
                 writer.writeheader()
                 for _, row in rows.items():
-                    print(row)
+                    logging.debug(row)
                     writer.writerow(row)
 
             return flask.redirect(f"/stage/{submission_name}")
