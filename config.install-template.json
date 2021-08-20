@@ -8,7 +8,13 @@
         "catsup-kraken2": {
             "script": "BASE_DIR/catsup/pipelines/catsup-kraken2/catsup-kraken2.nf",
             "image": "BASE_DIR/miniconda/envs/catsup",
-            "kraken2_human_ref": "BASE_DIR/catsup/minikraken2_v2_8GB_201904_UPDATE"
+            "kraken2_human_ref": "BASE_DIR/catsup/minikraken2_v2_8GB_201904_UPDATE",
+            "centrifuge_human_ref": "BASE_DIR/catsup/centrifuge_database/p_compressed+h+v"
+        },
+        "catsup-research": {
+            "script": "BASE_DIR/catsup/pipelines/catsup-research/catsup-research.nf",
+            "image": "BASE_DIR/miniconda/envs/catsup",
+            "kraken2_human_ref": "BASE_DIR/catsup/minikraken2_v2_8GB_201904_UPDATE",
             "centrifuge_human_ref": "BASE_DIR/catsup/centrifuge_database/p_compressed+h+v"
         }
     },
