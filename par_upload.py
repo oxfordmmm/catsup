@@ -3,6 +3,7 @@ import os
 import pathlib
 import subprocess
 import shlex
+import time
 
 import argh
 
@@ -11,13 +12,20 @@ def run(cmd, trace=True):
     if not os.environ.get("NO_TRACE") or not trace:
         print(cmd)
     if not os.environ.get("DUMMY_RUN"):
-        try:
-            subprocess.check_output(shlex.split(cmd))
-        except Exception as e:
-            return {
-                "error_command": cmd,
-                "error_exception_str": str(e),
-            }
+        attempt = 0
+        while True:
+            attempt += 1
+            try:
+                subprocess.check_output(shlex.split(cmd))
+            except Exception as e:
+                if attempt > 12:
+                    return {
+                        "error_command": cmd,
+                        "error_exception_str": str(e),
+                    }
+                else:
+                    print(f"Error in upload. Attempt {attempt}. Sleeping for {2 ** attempt} seconds")
+                    time.sleep(2 ** attempt)
 
 
 def upload_file(par_url, u_file, cloud_prefix):
