@@ -17,6 +17,7 @@ def run(cmd, trace=True):
             attempt += 1
             try:
                 subprocess.check_output(shlex.split(cmd))
+                break
             except Exception as e:
                 if attempt > 12:
                     return {
