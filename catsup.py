@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import sys
 import uuid
+import multiprocessing
 
 import par_upload
 import validate
@@ -20,8 +21,8 @@ cfg = None
 
 logging.basicConfig(
     level=logging.DEBUG,
-    format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S',
+    format="%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
 
@@ -30,7 +31,9 @@ def read_cfg(cfg_file, cfg_file_example):
         if pathlib.Path(cfg_file_example).exists():
             logging.info(f"{cfg_file} not found. Copying from {cfg_file_example}")
             shutil.copyfile(cfg_file_example, cfg_file)
-            logging.info(f"Please edit {cfg_file} to make it work with your environment")
+            logging.info(
+                f"Please edit {cfg_file} to make it work with your environment"
+            )
             sys.exit(0)
         else:
             logging.error(
@@ -122,6 +125,7 @@ out_fieldnames.append("clean_file_sha512")
 
 
 def hash_file(filename):
+    logging.debug(f"hashing {filename}")
     hashmd5 = (
         subprocess.check_output(shlex.split(f"md5sum {filename}"))
         .strip()
@@ -350,7 +354,7 @@ def prepare_data(submission_name):
     with open(input_csv, "r") as infile, open(sp3data_csv, "w") as outfile, open(
         sample_map_csv, "w"
     ) as mapfile:
-        reader = csv.DictReader(infile)
+        reader = list(csv.DictReader(infile))
         writer1 = csv.DictWriter(outfile, fieldnames=out_fieldnames)
         writer1.writeheader()
         writer2 = csv.DictWriter(mapfile, fieldnames=map_fieldnames)
@@ -358,13 +362,18 @@ def prepare_data(submission_name):
 
         submission_uuid4 = str(uuid.uuid4())
 
+        files = [row["sample_filename"] for row in reader]
+        with multiprocessing.Pool(multiprocessing.cpu_count()) as p:
+            ret = p.map(hash_file, files)
+            hashes = dict(zip(files, ret))  # file name : trio of hashes
+
         for row in reader:
             out = copy.copy(row)
             (
                 out["original_file_md5"],
                 out["original_file_sha1"],
                 out["original_file_sha512"],
-            ) = hash_file(out["sample_filename"])
+            ) = hashes[out["sample_filename"]]
             out["clean_file_md5"], out["clean_file_sha1"], out["clean_file_sha512"] = (
                 "",
                 "",
@@ -427,19 +436,32 @@ def make_clean_filename(sample_uuid4, subindex, sample_file_extension):
 
 def hash_clean_files(submission_name):
     submission_uuid4 = None
+    directory = f"{submission_name}/upload/"
+
     for writer, row in process_csv(f"{submission_name}/sp3data.csv"):
         submission_uuid4 = row["submission_uuid4"]
-        directory = f"{submission_name}/upload/"
         filename = make_clean_filename(
             row["sample_uuid4"], row["subindex"], row["sample_file_extension"]
         )
+        row["sample_filename"] = filename
+        writer.writerow(row)
+
+    with open(f"{submission_name}/sp3data.csv") as f:
+        reader = csv.DictReader(f)
+        files = [directory + row["sample_filename"] for row in reader]
+
+    with multiprocessing.Pool(multiprocessing.cpu_count()) as p:
+        ret = p.map(hash_file, files)
+        hashes = dict(zip(files, ret))
+
+    for writer, row in process_csv(f"{submission_name}/sp3data.csv"):
         (
             row["clean_file_md5"],
             row["clean_file_sha1"],
             row["clean_file_sha512"],
-        ) = hash_file(directory + "/" + filename)
-        row["sample_filename"] = filename
+        ) = hashes[directory + row["sample_filename"]]
         writer.writerow(row)
+
     return submission_uuid4
 
 
@@ -485,7 +507,9 @@ def run_pipeline(submission_name, number_of_files_per_sample):
             or nanopore_variant == "notmultiplexed_v1"
         ):
             ont_param = "--sequencing ONT"
-            pipeline_human_ref = cfg.get("pipelines").get(pipeline).get("centrifuge_human_ref")
+            pipeline_human_ref = (
+                cfg.get("pipelines").get(pipeline).get("centrifuge_human_ref")
+            )
 
     except Exception:
         pass
