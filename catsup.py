@@ -366,6 +366,8 @@ def prepare_data(submission_name):
         with multiprocessing.Pool(multiprocessing.cpu_count()) as p:
             ret = p.map(hash_file, files)
             hashes = dict(zip(files, ret))  # file name : trio of hashes
+            p.close()
+            p.join()
 
         for row in reader:
             out = copy.copy(row)
@@ -453,6 +455,8 @@ def hash_clean_files(submission_name):
     with multiprocessing.Pool(multiprocessing.cpu_count()) as p:
         ret = p.map(hash_file, files)
         hashes = dict(zip(files, ret))
+        p.close()
+        p.join()
 
     for writer, row in process_csv(f"{submission_name}/sp3data.csv"):
         (
