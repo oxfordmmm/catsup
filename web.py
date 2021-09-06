@@ -305,7 +305,7 @@ def page1():
 
     dt = datetime.datetime.now()
     proposed_submission_name = (
-        f"submission-{dt.year}_{dt.month}_{dt.day}-{dt.hour}_{dt.minute}_{dt.second}"
+        f"submission-{dt.year}{dt.month:02}{dt.day:02}_{dt.hour:02}{dt.minute:02}{dt.second:02}"
     )
 
     return flask.render_template(
