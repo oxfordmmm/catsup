@@ -255,6 +255,9 @@ def page1():
                 "new_submission.jinja2", title=title, error_msg=error_msg
             )
 
+        if submission_variant in ["multiplexed_v1", "notmultiplexed_v1", "dirfiles_v1"]:
+            submission_files_per_sample = 1
+
         r = catsup.create_template(
             submission_name, [submission_dir], submission_files_per_sample, api=True
         )
