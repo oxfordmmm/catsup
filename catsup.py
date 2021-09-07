@@ -20,8 +20,8 @@ cfg = None
 
 logging.basicConfig(
     level=logging.DEBUG,
-    format='%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S',
+    format="%(asctime)s.%(msecs)03d %(levelname)s %(module)s - %(funcName)s: %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 
 
@@ -30,7 +30,9 @@ def read_cfg(cfg_file, cfg_file_example):
         if pathlib.Path(cfg_file_example).exists():
             logging.info(f"{cfg_file} not found. Copying from {cfg_file_example}")
             shutil.copyfile(cfg_file_example, cfg_file)
-            logging.info(f"Please edit {cfg_file} to make it work with your environment")
+            logging.info(
+                f"Please edit {cfg_file} to make it work with your environment"
+            )
             sys.exit(0)
         else:
             logging.error(

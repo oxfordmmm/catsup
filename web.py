@@ -1,4 +1,4 @@
-"""This module provides a web interface to catsup"""
+"""This module provides a web interface to catsup."""
 
 import collections
 import csv
