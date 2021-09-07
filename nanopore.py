@@ -91,6 +91,29 @@ def nanopore_multiplexed_preprocess(input_dir: str, output_dir: str):
     return cmds
 
 
+def nanopore_dirfiles_preprocess(input_dir: str, output_dir: str):
+    """
+    Symlink dir of nanopore files into nanomerge dir.
+
+    Return list of list of commands to execute to bring a directory
+    of nanopore files (many samples) into the correct format.
+
+    The format is actually already correct (directory of fastqs),
+    so this just symlinks the files.
+    """
+    input_dir = Path(input_dir)
+    if not input_dir.is_dir():
+        return False
+
+    cmds = list()
+    for input_file in input_dir.glob("*"):
+        output_file = Path(output_dir) / input_file.name
+        cmd = f"ln -s {shlex.quote(str(input_file))} {shlex.quote(str(output_file))}"
+        cmds.append(cmd)
+
+    return [cmds]
+
+
 if __name__ == "__main__":
     argh.dispatch_commands(
         [

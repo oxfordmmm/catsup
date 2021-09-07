@@ -202,6 +202,11 @@ def nanopore_prepare(submission_name):
                 input_dir, str(nanopore_output_dir)
             )
 
+        if nanopore_variant == "dirfiles_v1":
+            nanopore_cmds = nanopore.nanopore_dirfiles_preprocess(
+                input_dir, str(nanopore_output_dir)
+            )
+
         for cmds_list in nanopore_cmds:
             for cmd in cmds_list:
                 logging.info(cmd)
@@ -483,9 +488,13 @@ def run_pipeline(submission_name, number_of_files_per_sample):
         if (
             nanopore_variant == "multiplexed_v1"
             or nanopore_variant == "notmultiplexed_v1"
+            or nanopore_variant == "dirfiles_v1"
         ):
             ont_param = "--sequencing ONT"
-            pipeline_human_ref = cfg.get("pipelines").get(pipeline).get("centrifuge_human_ref")
+            pipeline_human_ref = (
+                cfg.get("pipelines").get(pipeline).get("centrifuge_human_ref")
+            )
+            number_of_files_per_sample = 1
 
     except Exception:
         pass
