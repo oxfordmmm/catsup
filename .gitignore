@@ -17,3 +17,8 @@ tests/
 *.pyc
 .coverage
 test*
+submission-*
+minikraken2_*
+centrifuge_database
+web.bin
+web.build
